@@ -1,8 +1,10 @@
 import configparser
 import json
+import os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from functools import reduce
+from shutil import copyfile
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -63,8 +65,12 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
         "anzahl": len(documents),
         "export_time": datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
         "documents": documents}
-    with open(parameter["json_export_datei"], 'w', encoding='utf-8') as outfile:
+    json_export_datei = parameter["json_export_datei"]
+    json_export_datei_tmp = json_export_datei + "_tmp"
+    with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
+    copyfile(json_export_datei_tmp, json_export_datei)
+    os.remove(json_export_datei_tmp)
 
     # TODO LOG File schreiben
 
@@ -79,7 +85,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
 def _search_documents(api_url, cookies, von_datum, bis_datum=None, max_documents=1000):
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann
-    # TODO Sicherheitshalber oder reicht das >=
+    # TODO sicherheitshalber oder reicht >=
     von_datum = von_datum.date() - timedelta(days=1)
 
     von_datum = von_datum.strptime("%d.%m.%Y").strftime("%Y-%m-%d")
@@ -138,6 +144,7 @@ def _get_config(profil) -> dict:
     section = config.read(config_file)[config_section]
     assert isinstance(section, dict)
     return section
+
 
 def _write_config(profil, new_params):
     """

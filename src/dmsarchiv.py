@@ -44,11 +44,13 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     # Dokumenten Export Informationen auswerten
     ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
                       documents)
-    max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
     min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MAX_DATETIME)
+    max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
     if len(documents) >= max_documents:
         raise RuntimeError("Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {}."
-                           " Das Such-Datum muss weiter eingeschränkt werden".format(max_documents))
+                           " Das Such-Datum muss weiter eingeschränkt werden. min_ctimestamp={}, max_ctimestamp={}."
+                           .format(max_documents, min_ctimestamp.strftime("%d.%m.%Y"),
+                                   max_ctimestamp.strftime("%d.%m.%Y")))
     if bis_datum is not None:
         export_von_datum = max_ctimestamp.strftime("%d.%m.%Y")
     else:

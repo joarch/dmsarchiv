@@ -16,6 +16,8 @@ PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"
 PARAM_PASSWD = "dms_api_passwort"
 
+MIN_DATETIME = datetime.strptime("01.01.2000", "%d.%m.%Y")
+
 
 def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     # DMS API Connect
@@ -39,9 +41,10 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     documents = _search_documents(api_url, cookies, export_von_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
-    ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"), documents)
-    max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps)
-    min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps)
+    ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
+                      documents)
+    max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
+    min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MIN_DATETIME)
     if len(documents) < max_documents:
         # maximale Anzahl an geladenen Dokumenten nicht überschritten, d.h. es wurden alle Dokumente geladen
         # als nächstes Export-Von-Datum wird das aktuelle Datum verwendet
@@ -58,7 +61,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     export_info["export_von_datum"] = export_von_datum
 
     # DMS API Disconnect
-    _disconnect(api_url, profil)
+    _disconnect(api_url, cookies)
 
     # Dokumente als JSON Datei speichern
     result = {
@@ -125,9 +128,8 @@ def _connect(profil):
     return params[PARAM_URL], cookies
 
 
-def _disconnect(cookies, profil):
-    params = _get_config(profil)
-    r = requests.get("{}/disconnect".format(params[PARAM_URL]), cookies=cookies)
+def _disconnect(api_url, cookies):
+    r = requests.get("{}/disconnect".format(api_url), cookies=cookies)
 
     _assert_request(r)
 

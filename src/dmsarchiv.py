@@ -36,10 +36,10 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
-    documents = _search_documents(api_url, cookies, export_von_datum, max_documents)
+    documents = _search_documents(api_url, cookies, export_von_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
-    ctimestamps = map(lambda d: datetime.strptime(d["ctimestamp"], "%Y-%m-%d %H:%M:%S"), documents)
+    ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"), documents)
     max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps)
     min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps)
     if len(documents) < max_documents:

@@ -20,7 +20,7 @@ MIN_DATETIME = datetime.strptime("01.01.2000", "%d.%m.%Y")
 MAX_DATETIME = datetime.strptime("01.01.3999", "%d.%m.%Y")
 
 
-def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
+def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum=None):
     # DMS API Connect
     api_url, cookies = _connect(profil)
 
@@ -39,22 +39,21 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
-    documents = _search_documents(api_url, cookies, export_von_datum, max_documents=max_documents)
+    documents = _search_documents(api_url, cookies, export_von_datum, bis_datum=bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
     ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
                       documents)
     max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
     min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MAX_DATETIME)
-    if len(documents) < max_documents:
-        # maximale Anzahl an geladenen Dokumenten nicht überschritten, d.h. es wurden alle Dokumente geladen
-        # als nächstes Export-Von-Datum wird das aktuelle Datum verwendet
-        export_von_datum = datetime.now().strftime("%d.%m.%Y")
-    else:
-        # maximale Anzahl an geladenen Dokumenten erreicht, d.h. es konnten nicht alle Dokumente geladen werden,
-        # als nächstes Export-Von-Datum wird das jüngste Dokumenten Datum verwendet (max. Änderungsdatum),
-        # damit kann der nächste Export hier wieder aufsetzen
+    if len(documents) >= max_documents:
+        raise RuntimeError("Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {}."
+                           " Das Such-Datum muss weiter eingeschränkt werden".format(max_documents))
+    if bis_datum is not None:
         export_von_datum = max_ctimestamp.strftime("%d.%m.%Y")
+    else:
+        export_von_datum = datetime.now().strftime("%d.%m.%Y")
+
     export_info["info_letzter_export_anzahl_dokumente"] = len(documents)
     export_info["info_min_ctimestamp"] = min_ctimestamp.strftime("%d.%m.%Y")
     export_info["info_max_ctimestamp"] = max_ctimestamp.strftime("%d.%m.%Y")

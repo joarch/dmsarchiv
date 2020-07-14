@@ -3,7 +3,6 @@ import json
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal
-from functools import reduce
 from shutil import copyfile
 
 import requests
@@ -42,10 +41,16 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     documents = _search_documents(api_url, cookies, export_von_datum, bis_datum=bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
-    ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
-                      documents)
-    min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MAX_DATETIME)
-    max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
+    ctimestamps = list(map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
+                           documents))
+    ctimestamps.sort()
+    if len(ctimestamps) > 0:
+        min_ctimestamp = ctimestamps[0]
+        max_ctimestamp = ctimestamps[-1]
+
+    if bis_datum is not None and len(documents) == 0:
+        raise RuntimeError("Achtung es wurden keine Dokumente exportiert. Bitte das Such 'bis_datum' erweitern.")
+
     if len(documents) >= max_documents:
         raise RuntimeError("Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {}."
                            " Das Such-Datum muss weiter eingeschränkt werden. min_ctimestamp={}, max_ctimestamp={}."

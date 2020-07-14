@@ -83,16 +83,17 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
 
 
 def _search_documents(api_url, cookies, von_datum, bis_datum=None, max_documents=1000):
+    von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann
     # TODO sicherheitshalber oder reicht >=
     von_datum = von_datum.date() - timedelta(days=1)
 
-    von_datum = von_datum.strptime("%d.%m.%Y").strftime("%Y-%m-%d")
+    von_datum = von_datum.strftime("%Y-%m-%d")
     search_parameter = [{"classifyAttribut": "ctimestamp", "searchOperator": ">=",
                          "searchValue": von_datum}]
     if bis_datum is not None:
-        bis_datum = von_datum.strptime("%d.%m.%Y").strftime("%Y-%m-%d")
+        bis_datum = datetime.strptime(bis_datum, "%d.%m.%Y").strftime("%Y-%m-%d")
         search_parameter.append({"classifyAttribut": "ctimestamp", "searchOperator": "<=",
                                  "searchValue": bis_datum})
     r = requests.post("{}/searchDocumentsExt?maxDocumentCount={}".format(api_url, max_documents),

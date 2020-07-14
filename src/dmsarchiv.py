@@ -53,7 +53,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     export_info["info_min_ctimestamp"] = min_ctimestamp.strftime("%d.%m.%Y")
     export_info["info_max_ctimestamp"] = max_ctimestamp.strftime("%d.%m.%Y")
     # - Export-Von-Datum für den nächsten Export
-    export_info["export_von_datum"] = export_von_datum.strftime("%d.%m.%Y")
+    export_info["export_von_datum"] = export_von_datum
 
     # DMS API Disconnect
     _disconnect(api_url, profil)
@@ -130,13 +130,14 @@ def _assert_request(request):
         raise RuntimeError(f"Fehler beim Request: {request.status_code}, Message: {request.text}")
 
 
-def _get_config(profil):
+def _get_config(profil) -> dict:
     split = profil.split(":")
     config_file = split[0]
     config_section = split[1]
     config = configparser.ConfigParser()
-    return config.read(config_file)[config_section]
-
+    section = config.read(config_file)[config_section]
+    assert isinstance(section, dict)
+    return section
 
 def _write_config(profil, new_params):
     """

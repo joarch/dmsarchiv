@@ -160,7 +160,7 @@ def _write_config(profil, new_params):
     for section in config.sections():
         if section == config_section:
             for key, value in new_params.items():
-                config[section][key] = value
+                config[section][key] = str(value)
 
     with open(config_file, 'w') as configfile:
         config.write(configfile)

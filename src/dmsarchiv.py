@@ -17,6 +17,7 @@ PARAM_USER = "dms_api_benutzer"
 PARAM_PASSWD = "dms_api_passwort"
 
 MIN_DATETIME = datetime.strptime("01.01.2000", "%d.%m.%Y")
+MAX_DATETIME = datetime.strptime("01.01.3999", "%d.%m.%Y")
 
 
 def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
@@ -44,7 +45,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     ctimestamps = map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
                       documents)
     max_ctimestamp = reduce(lambda x, y: x if x > y else y, ctimestamps, MIN_DATETIME)
-    min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MIN_DATETIME)
+    min_ctimestamp = reduce(lambda x, y: x if x < y else y, ctimestamps, MAX_DATETIME)
     if len(documents) < max_documents:
         # maximale Anzahl an geladenen Dokumenten nicht überschritten, d.h. es wurden alle Dokumente geladen
         # als nächstes Export-Von-Datum wird das aktuelle Datum verwendet

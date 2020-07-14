@@ -9,8 +9,8 @@ from shutil import copyfile
 import requests
 from requests.auth import HTTPBasicAuth
 
-DEFAULT_PROFIL = "config.ini:PARAMETER"
-DEFAULT_EXPORT_PROFIL = "config.ini:EXPORT"
+DEFAULT_PROFIL = "config/config.ini:PARAMETER"
+DEFAULT_EXPORT_PROFIL = "config/config.ini:EXPORT"
 
 PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"
@@ -33,7 +33,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL):
     export_von_datum = _get_config(export_profil)["export_von_datum"]
 
     # DMS API Search
-    max_documents = parameter["max_documents"]
+    max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
     documents = _search_documents(api_url, cookies, export_von_datum, max_documents)
@@ -136,14 +136,13 @@ def _assert_request(request):
         raise RuntimeError(f"Fehler beim Request: {request.status_code}, Message: {request.text}")
 
 
-def _get_config(profil) -> dict:
+def _get_config(profil):
     split = profil.split(":")
     config_file = split[0]
     config_section = split[1]
     config = configparser.ConfigParser()
-    section = config.read(config_file)[config_section]
-    assert isinstance(section, dict)
-    return section
+    config.read(config_file)
+    return config[config_section]
 
 
 def _write_config(profil, new_params):

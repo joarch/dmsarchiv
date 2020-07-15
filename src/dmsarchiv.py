@@ -20,6 +20,8 @@ MAX_DATETIME = datetime.strptime("01.01.3999", "%d.%m.%Y")
 
 
 def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum=None):
+    # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
+
     # DMS API Connect
     api_url, cookies = _connect(profil)
 
@@ -47,6 +49,9 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     if len(ctimestamps) > 0:
         min_ctimestamp = ctimestamps[0]
         max_ctimestamp = ctimestamps[-1]
+    else:
+        min_ctimestamp = None
+        max_ctimestamp = None
 
     if bis_datum is not None and len(documents) == 0:
         raise RuntimeError("Achtung es wurden keine Dokumente exportiert. Bitte das Such 'bis_datum' erweitern.")
@@ -106,6 +111,9 @@ def _search_documents(api_url, cookies, von_datum, bis_datum=None, max_documents
         bis_datum = datetime.strptime(bis_datum, "%d.%m.%Y").strftime("%Y-%m-%d")
         search_parameter.append({"classifyAttribut": "ctimestamp", "searchOperator": "<=",
                                  "searchValue": bis_datum})
+
+    # TODO weitere Suchparameter aus config/dmsarchive.json verwenden (export_parameter)
+
     r = requests.post("{}/searchDocumentsExt?maxDocumentCount={}".format(api_url, max_documents),
                       data=json.dumps(search_parameter),
                       cookies=cookies, headers=_headers())

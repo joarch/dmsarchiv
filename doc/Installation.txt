@@ -1,0 +1,42 @@
+# Installation GIT
+
+Git ist ein VCS für Programmupdates, d.h. die Versionsverwaltung für die Programmdateien.
+Es wird zusätzlich eine Git Bash installiert, in der die Git Operationen ausgeführt werden können.
+
+https://git-scm.com
+
+# Installation Python (Version >= 3.8)
+
+Python ist die Programmiersprache und Laufzeitumgebung.
+
+https://www.python.org/downloads/
+
+# Programm mittels git runterladen
+
+- Git Bash starten
+- cd in das Zielverzeichnis
+- git clone https://github.com/joarch/dmsarchiv.git
+  (es wird ein Unterordner dmsarchiv erstellt, hier liegen die Programmdateien: Zielverzeichnis\dmsarchiv)
+
+# Virtual Environment einrichten
+
+Damit wird eine Python virtuelle Umgebung erzeugt, in der notwendige Bibliotheken abgelegt werden.
+Diese ist dann isoliert von anderen Python Laufzeitumgebungen, bzw. anderen Python Programmen.
+
+- cmd öffnen
+- cd in das Zielverzeichnis
+- python -m venv venv
+  (es wird ein Unterordner venv erstellt, in dem die Virtual Environment installiert wird: Zielverzeichnis\venv)
+- Zielverzeichnis\venv\Scripts\activate
+  (damit wird die Virtual Environment gestartet, alle weiteren Python Befehle benutzen dann diese Umgebung)
+- pip install requests
+  (Installation der notwendigen Bibliothek in venv)
+
+# Programm einrichten und starten
+
+- zur Konfiguration siehe Zielverzeichnis\dmsarchiv\Konfiguration.txt
+- Zielverzeichnis\dmsarchiv\scripts\start.bat
+
+# Programm Update
+
+- Zielverzeichnis\dmsarchiv\scripts\update.bat

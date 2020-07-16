@@ -2,6 +2,7 @@
   "name": "Standardexport",
   "export_format": "csv",
   "json_export_datei": "documents.json",
+  "log_datei": "export.log",
   "suchparameter_list": [
     {
       "classifyAttribut": "dyn_0_1506678275401",

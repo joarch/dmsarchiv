@@ -34,7 +34,6 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     export_info["info_api_max_count"] = api_statistics["maxCount"]
 
     # Konfiguration lesen
-    parameter = _get_config(profil)
     parameter_export = _get_config(export_profil)
 
     export_von_datum = parameter_export["export_von_datum"] if export_von_datum is None else export_von_datum

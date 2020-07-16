@@ -14,11 +14,9 @@ PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"
 PARAM_PASSWD = "dms_api_passwort"
 
-MIN_DATETIME = datetime.strptime("01.01.2000", "%d.%m.%Y")
-MAX_DATETIME = datetime.strptime("01.01.3999", "%d.%m.%Y")
+DEFAULT_EXPORT_VON_DATUM="01.01.2010"
 
-
-def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum=None):
+def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_von_datum=None, export_bis_datum=None, max_documents=None, tage_offset=None):
     # TODO LOG File schreiben
     # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
 
@@ -34,16 +32,23 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
 
     # Konfiguration lesen
     parameter = _get_config(profil)
-    export_von_datum = _get_config(export_profil)["export_von_datum"]
-    with open(_get_config(export_profil)["export_parameter_datei"], encoding="utf-8") as file:
+    parameter_export = _get_config(export_profil)
+
+    export_von_datum = parameter_export["export_von_datum"] if export_von_datum is None else export_von_datum
+    export_bis_datum = parameter_export["export_bis_datum"] if export_bis_datum is None else export_bis_datum
+    max_documents = int(parameter_export["max_documents"]) if max_documents is None else max_documents
+    tage_offset = int(parameter_export["tage_offset"]) if tage_offset is None else tage_offset
+    with open(parameter_export["export_parameter_datei"], encoding="utf-8") as file:
         export_parameter = json.load(file)
 
+    if not export_von_datum:
+        export_von_datum = DEFAULT_EXPORT_VON_DATUM
+
     # DMS API Search
-    max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
     documents = _search_documents(api_url, cookies, export_von_datum, export_parameter["suchparameter_list"],
-                                  bis_datum=bis_datum, max_documents=max_documents)
+                                  bis_datum=export_bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
     ctimestamps = list(map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
@@ -56,31 +61,39 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
         min_ctimestamp = None
         max_ctimestamp = None
 
-    if bis_datum is not None and len(documents) == 0:
+    if export_bis_datum and len(documents) == 0:
         raise RuntimeError("Achtung es wurden keine Dokumente exportiert. Bitte das Such 'bis_datum' erweitern.")
 
     if len(documents) >= max_documents:
-        raise RuntimeError("Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {}."
-                           " Das Such-Datum muss weiter eingeschränkt werden. min_ctimestamp={}, max_ctimestamp={}."
-                           .format(max_documents, min_ctimestamp.strftime("%d.%m.%Y"),
-                                   max_ctimestamp.strftime("%d.%m.%Y")))
-    if bis_datum is not None:
+        raise RuntimeError(f"Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {max_documents}."
+                           f" Das Such-Datum muss weiter eingeschränkt werden. Es wurde gesucht mit {export_von_datum} - {export_bis_datum}.")
+    if export_bis_datum:
+        # es gab eine Einschränkung bis Datum
         export_von_datum = max_ctimestamp.strftime("%d.%m.%Y")
+        # - nächste Zeitscheibe in Export-Info schreiben
+        export_bis_datum = datetime.strptime(export_bis_datum, "%d.%m.%Y") + timedelta(days=tage_offset)
+        if export_bis_datum < datetime.now():
+            export_bis_datum = export_bis_datum.strftime("%d.%m.%Y")
+        else:
+            # Ende erreicht der nächste Export läuft ohne bis Datum
+            export_bis_datum = ""
     else:
         export_von_datum = datetime.now().strftime("%d.%m.%Y")
 
     export_info["info_letzter_export_anzahl_dokumente"] = len(documents)
     export_info["info_min_ctimestamp"] = min_ctimestamp.strftime("%d.%m.%Y")
     export_info["info_max_ctimestamp"] = max_ctimestamp.strftime("%d.%m.%Y")
-    # - Export-Von-Datum für den nächsten Export
+    # - Export Parameter für den nächsten Export
     export_info["export_von_datum"] = export_von_datum
-
+    export_info["export_bis_datum"] = export_bis_datum
+    export_info["max_documents"] = max_documents
+    export_info["tage_offset"] = tage_offset
+    
     # DMS API Disconnect
     _disconnect(api_url, cookies)
 
     # Dokumente als JSON Datei speichern
     result = {
-        "anzahl": len(documents),
         "export_time": datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
         "documents": documents}
     json_export_datei = parameter["json_export_datei"]
@@ -88,21 +101,25 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
 
+    result["anzahl_exportiert"] = len(documents)
+    anzahl_neu = len(documents)
     if os.path.exists(json_export_datei):
         # neue und vorhandene Export Ergebnisse zusammenführen
         with open(json_export_datei, encoding="utf-8") as file:
             result_vorher = json.load(file)
-        result["anzahl_neu"] = result["anzahl"]
-        result["anzahl"] = result["anzahl"] + result_vorher["anzahl"]
         doc_ids_new = [document["docId"] for document in result["documents"]]
         for document in result_vorher["documents"]:
-            if ["docId"] not in doc_ids_new:
+            if document["docId"] not in doc_ids_new:
                 result["documents"].append(document)
-
+            else:
+                anzahl_neu -= 1
+    result["anzahl"] = len(result["documents"])
+    result["anzahl_neu"] = anzahl_neu
+    
     # Sortierung nach DocId
     result["documents"].sort(key=lambda document: document["docId"])
 
-    with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
+    with open(json_export_datei, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
 
     os.remove(json_export_datei_tmp)
@@ -111,6 +128,8 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
 
     # Export Info (letzter Export Zeitstempel und DMS API Info) in die Config-Datei zurückschreiben
     _write_config(export_profil, export_info)
+
+    print(f"Export fertig: {export_von_datum} - {export_bis_datum}, Anzahl exportiert: {result['anzahl_exportiert']}, Anzahl neu: {result['anzahl_neu']}, Anzahl gesamt: {result['anzahl']}.")
 
 
 def _search_documents(api_url, cookies, von_datum, suchparameter_list, bis_datum=None, max_documents=1000):
@@ -123,7 +142,7 @@ def _search_documents(api_url, cookies, von_datum, suchparameter_list, bis_datum
     von_datum = von_datum.strftime("%Y-%m-%d")
     search_parameter = [{"classifyAttribut": "ctimestamp", "searchOperator": ">=",
                          "searchValue": von_datum}]
-    if bis_datum is not None:
+    if bis_datum:
         bis_datum = datetime.strptime(bis_datum, "%d.%m.%Y").strftime("%Y-%m-%d")
         search_parameter.append({"classifyAttribut": "ctimestamp", "searchOperator": "<=",
                                  "searchValue": bis_datum})

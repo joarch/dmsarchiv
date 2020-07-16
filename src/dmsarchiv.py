@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal
+from typing import List, Dict
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -14,9 +15,11 @@ PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"
 PARAM_PASSWD = "dms_api_passwort"
 
-DEFAULT_EXPORT_VON_DATUM="01.01.2010"
+DEFAULT_EXPORT_VON_DATUM = "01.01.2010"
 
-def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_von_datum=None, export_bis_datum=None, max_documents=None, tage_offset=None):
+
+def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_von_datum=None, export_bis_datum=None,
+           max_documents=None, tage_offset=None):
     # TODO LOG File schreiben
     # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
 
@@ -65,8 +68,9 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
         raise RuntimeError("Achtung es wurden keine Dokumente exportiert. Bitte das Such 'bis_datum' erweitern.")
 
     if len(documents) >= max_documents:
-        raise RuntimeError(f"Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {max_documents}."
-                           f" Das Such-Datum muss weiter eingeschränkt werden. Es wurde gesucht mit {export_von_datum} - {export_bis_datum}.")
+        raise RuntimeError(f"Achtung es wurden evtl. nicht alle Dokumente exportiert, Anzahl >= {max_documents}. "
+                           f"Das Such-Datum muss weiter eingeschränkt werden. "
+                           f"Es wurde gesucht mit {export_von_datum} - {export_bis_datum}.")
     if export_bis_datum:
         # es gab eine Einschränkung bis Datum
         export_von_datum = max_ctimestamp.strftime("%d.%m.%Y")
@@ -88,7 +92,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     export_info["export_bis_datum"] = export_bis_datum
     export_info["max_documents"] = max_documents
     export_info["tage_offset"] = tage_offset
-    
+
     # DMS API Disconnect
     _disconnect(api_url, cookies)
 
@@ -115,7 +119,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
                 anzahl_neu -= 1
     result["anzahl"] = len(result["documents"])
     result["anzahl_neu"] = anzahl_neu
-    
+
     # Sortierung nach DocId
     result["documents"].sort(key=lambda document: document["docId"])
 
@@ -129,10 +133,15 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     # Export Info (letzter Export Zeitstempel und DMS API Info) in die Config-Datei zurückschreiben
     _write_config(export_profil, export_info)
 
-    print(f"Export fertig: {export_von_datum} - {export_bis_datum}, Anzahl exportiert: {result['anzahl_exportiert']}, Anzahl neu: {result['anzahl_neu']}, Anzahl gesamt: {result['anzahl']}.")
+    print(
+        f"Export fertig: {export_von_datum} - {export_bis_datum}, "
+        f"Anzahl exportiert: {result['anzahl_exportiert']}, "
+        f"Anzahl neu: {result['anzahl_neu']}, "
+        f"Anzahl gesamt: {result['anzahl']}.")
 
 
-def _search_documents(api_url, cookies, von_datum, suchparameter_list, bis_datum=None, max_documents=1000):
+def _search_documents(api_url, cookies, von_datum, suchparameter_list,
+                      bis_datum=None, max_documents=1000) -> List[Dict]:
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann

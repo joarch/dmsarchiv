@@ -34,9 +34,26 @@ Diese ist dann isoliert von anderen Python Laufzeitumgebungen, bzw. anderen Pyth
 
 # Programm einrichten und starten
 
-- zur Konfiguration siehe Zielverzeichnis\dmsarchiv\Konfiguration.txt
-- Zielverzeichnis\dmsarchiv\scripts\start.bat
+- Zielverzeichnis\dmsarchiv\config\config_vorlage.ini als Zielverzeichnis\config.ini speichern
+  und anpassen
+  (Anpassung der Konfiguration Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt
+- Zielverzeichnis\dmsarchiv\scripts\setenv_vorlage.bat als Zielverzeichnis\setenv.bat speichern
+  und anpassen
+- Zielverzeichnis\dmsarchiv\scripts\update.bat aufrufen
+  (die Sktipte start.bat und update.bat werden automatisch in Zielverzeichnis kopiert)
 
-# Programm Update
+# Programm starten
 
-- Zielverzeichnis\dmsarchiv\scripts\update.bat
+- Zielverzeichnis\start.bat
+
+# Programm Update ausführen
+
+- Zielverzeichnis\update.bat
+
+# Initialer Export
+
+- bei "Fehlermeldung Achtung es wurden evtl. nicht alle Dokumente exportiert..."
+  muss das export_von_datum und das export_bis_datum in der config.ini Datei entsprechend
+  angepasst werden. Der Zeitraum muss so gewählt werden, das die Anzahl an maximalen Dokumenten
+  nicht erreicht wird. Beim nächsten Ausführen wird die Zeitscheibe automatisch um die konfigurierten Tage
+  erweitert. Das Programm muss dann solange erneut ausgeführt werden, bis das Tagesdatum erreicht ist.

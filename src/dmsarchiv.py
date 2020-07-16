@@ -100,7 +100,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     result = {
         "export_time": datetime.now().strftime("%d.%m.%Y %H:%M:%S"),
         "documents": documents}
-    json_export_datei = parameter["json_export_datei"]
+    json_export_datei = export_parameter["json_export_datei"]
     json_export_datei_tmp = json_export_datei + "_tmp"
     with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)

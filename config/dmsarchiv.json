@@ -3,7 +3,7 @@
   "export_format": "csv",
   "suchparameter_list": [
     {
-      "classifyAttribut": "bis_datum",
+      "classifyAttribut": "dyn_0_1506678275401",
       "searchOperator": "=",
       "searchValue": "0108"
     }

@@ -3,7 +3,6 @@ import json
 import os
 from datetime import datetime, timedelta
 from decimal import Decimal
-from shutil import copyfile
 
 import requests
 from requests.auth import HTTPBasicAuth
@@ -20,6 +19,7 @@ MAX_DATETIME = datetime.strptime("01.01.3999", "%d.%m.%Y")
 
 
 def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum=None):
+    # TODO LOG File schreiben
     # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
 
     # DMS API Connect
@@ -35,12 +35,15 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     # Konfiguration lesen
     parameter = _get_config(profil)
     export_von_datum = _get_config(export_profil)["export_von_datum"]
+    with open(parameter["export_parameter_datei"], encoding="utf-8") as file:
+        export_parameter = json.load(file)
 
     # DMS API Search
     max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
-    documents = _search_documents(api_url, cookies, export_von_datum, bis_datum=bis_datum, max_documents=max_documents)
+    documents = _search_documents(api_url, cookies, export_von_datum, export_parameter["suchparameter"],
+                                  bis_datum=bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
     ctimestamps = list(map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
@@ -84,12 +87,25 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     json_export_datei_tmp = json_export_datei + "_tmp"
     with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
-    copyfile(json_export_datei_tmp, json_export_datei)
+
+    if os.path.exists(json_export_datei):
+        # neue und vorhandene Export Ergebnisse zusammenführen
+        with open(json_export_datei, encoding="utf-8") as file:
+            result_vorher = json.load(file)
+        result["anzahl_neu"] = result["anzahl"]
+        result["anzahl"] = result["anzahl"] + result_vorher["anzahl"]
+        doc_ids_new = [document["docId"] for document in result["documents"]]
+        for document in result_vorher["documents"]:
+            if ["docId"] not in doc_ids_new:
+                result["documents"].append(document)
+
+    # Sortierung nach DocId
+    result["documents"].sort(key=lambda document: document["docId"])
+
+    with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
+        json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
+
     os.remove(json_export_datei_tmp)
-
-    # TODO LOG File schreiben
-
-    # TODO mergen in eine JSON Datei
 
     # TODO JSON als CSV oder Excel speichern
 
@@ -97,7 +113,7 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     _write_config(export_profil, export_info)
 
 
-def _search_documents(api_url, cookies, von_datum, bis_datum=None, max_documents=1000):
+def _search_documents(api_url, cookies, von_datum, suchparameter_list, bis_datum=None, max_documents=1000):
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann
@@ -112,7 +128,8 @@ def _search_documents(api_url, cookies, von_datum, bis_datum=None, max_documents
         search_parameter.append({"classifyAttribut": "ctimestamp", "searchOperator": "<=",
                                  "searchValue": bis_datum})
 
-    # TODO weitere Suchparameter aus config/dmsarchive.json verwenden (export_parameter)
+    for suchparameter in suchparameter_list:
+        search_parameter.append(suchparameter)
 
     r = requests.post("{}/searchDocumentsExt?maxDocumentCount={}".format(api_url, max_documents),
                       data=json.dumps(search_parameter),

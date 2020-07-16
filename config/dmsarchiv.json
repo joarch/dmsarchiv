@@ -1,4 +1,11 @@
 {
   "name": "Standardexport",
-  "export_format": "csv"
+  "export_format": "csv",
+  "suchparameter_list": [
+    {
+      "classifyAttribut": "bis_datum",
+      "searchOperator": "=",
+      "searchValue": "0108"
+    }
+  ]
 }

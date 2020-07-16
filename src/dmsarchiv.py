@@ -35,14 +35,14 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, bis_datum
     # Konfiguration lesen
     parameter = _get_config(profil)
     export_von_datum = _get_config(export_profil)["export_von_datum"]
-    with open(parameter["export_parameter_datei"], encoding="utf-8") as file:
+    with open(_get_config(export_profil)["export_parameter_datei"], encoding="utf-8") as file:
         export_parameter = json.load(file)
 
     # DMS API Search
     max_documents = int(parameter["max_documents"])
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
-    documents = _search_documents(api_url, cookies, export_von_datum, export_parameter["suchparameter"],
+    documents = _search_documents(api_url, cookies, export_von_datum, export_parameter["suchparameter_list"],
                                   bis_datum=bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten

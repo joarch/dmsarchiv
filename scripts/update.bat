@@ -34,8 +34,8 @@ cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git pull
 %GIT_HOME%\bin\git log  --all --oneline -n1 > ../update_1.log
 
-cp %PROGRAM_DIR%\scripts\update.bat .
-cp %PROGRAM_DIR%\scripts\start.bat .
+copy %PROGRAM_DIR%\scripts\update.bat .
+copy %PROGRAM_DIR%\scripts\start.bat .
 
 %PROGRAM_DIR%\scripts\install.bat
 cd ..

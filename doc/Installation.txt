@@ -31,6 +31,7 @@ Diese ist dann isoliert von anderen Python Laufzeitumgebungen, bzw. anderen Pyth
   (damit wird die Virtual Environment gestartet, alle weiteren Python Befehle benutzen dann diese Umgebung)
 - pip install requests
   (Installation der notwendigen Bibliothek in venv)
+- pip install openpyxl
 
 # Programm einrichten und starten
 

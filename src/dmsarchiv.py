@@ -8,6 +8,8 @@ from typing import List, Dict
 import requests
 from requests.auth import HTTPBasicAuth
 
+import export_excel
+
 DEFAULT_PROFIL = "config/config.ini:PARAMETER"
 DEFAULT_EXPORT_PROFIL = "config/config.ini:EXPORT"
 
@@ -103,11 +105,10 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     json_export_datei_tmp = json_export_datei + "_tmp"
     with open(json_export_datei_tmp, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
-
     result["anzahl_exportiert"] = len(documents)
     anzahl_neu = len(documents)
+    # neue und vorhandene Export Ergebnisse zusammenführen, falls vorhanden
     if os.path.exists(json_export_datei):
-        # neue und vorhandene Export Ergebnisse zusammenführen
         with open(json_export_datei, encoding="utf-8") as file:
             result_vorher = json.load(file)
         doc_ids_new = [document["docId"] for document in result["documents"]]
@@ -122,12 +123,16 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     # Sortierung nach DocId
     result["documents"].sort(key=lambda document: document["docId"])
 
+    # Speichern in JSON Datei und löschen temp. Export Datei
     with open(json_export_datei, 'w', encoding='utf-8') as outfile:
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
-
     os.remove(json_export_datei_tmp)
 
-    # TODO JSON als CSV oder Excel speichern
+    # Excel Export
+    if export_parameter["export_format"] == "xlsx":
+        export_excel(documents, export_parameter["export"])
+    else:
+        raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export_format']}")
 
     # Export Info (letzter Export Zeitstempel und DMS API Info) in die Config-Datei zurückschreiben
     _write_config(export_profil, export_info)

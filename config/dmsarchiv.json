@@ -1,13 +1,42 @@
 {
   "name": "Standardexport",
-  "export_format": "csv",
-  "json_export_datei": "documents.json",
+  "export_format": "xlsx",
+  "json_export_datei": "export_documents.json",
   "log_datei": "export.log",
   "suchparameter_list": [
     {
       "classifyAttribut": "dyn_0_1506678275401",
       "searchOperator": "=",
-      "searchValue": "0108"
+      "searchValue": "TEST"
     }
-  ]
+  ],
+  "export": {
+    "dateiname": "export_documents.xlsx",
+    "spaltenueberschrift": "ja",
+    "spaltenueberschrift_format": {
+      "format": "PatternFill",
+      "start_color": "AAAAAA",
+      "end_color": "AAAAAA",
+      "fill_type": "solid"
+    },
+    "spalten": [
+      {
+        "feld": "docId",
+        "ueberschrift": "DocId"
+      },
+      {
+        "feld": "ctimestamp",
+        "ueberschrift": "Geändert",
+        "number_format": "DD.MM.YYYY"
+      },
+      {
+        "feld": "bemerkung",
+        "ueberschrift": "Bemerkung"
+      },
+      {
+        "feld": "",
+        "ueberschrift": "Geprüft"
+      }
+    ]
+  }
 }

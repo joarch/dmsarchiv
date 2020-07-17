@@ -4,7 +4,7 @@ REM Update prüfen und ausführen
 REM
 call setenv.bat
 
-IF NOT EXISTS %TEMP_DIR% mkdir %TEMP_DIR%
+IF NOT EXISTS %TEMP_DIR% md %TEMP_DIR%
 
 IF NOT DEFINED GIT_HOME (
 echo "Das automatische Update kann nicht durchgeführt werden. Bitte GIT_HOME konfigurieren."

@@ -4,6 +4,8 @@ REM Update prüfen und ausführen
 REM
 call setenv.bat
 
+IF NOT EXISTS %TEMP_DIR% mkdir %TEMP_DIR%
+
 IF NOT DEFINED GIT_HOME (
 echo "Das automatische Update kann nicht durchgeführt werden. Bitte GIT_HOME konfigurieren."
 goto ENDE
@@ -14,7 +16,9 @@ cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git fetch
 %GIT_HOME%\bin\git log --all --oneline -n1 > ../update_2.log
 cd ..
-fc update_1.log update_2.log
+copy update_2.log %TEMP_DIR%
+del update_2.log
+fc %TEMP_DIR%\update_1.log %TEMP_DIR%\update_2.log
 if errorlevel 1 goto UPDATE
 
 echo "Kein Update notwendig."
@@ -26,7 +30,7 @@ echo "**********************************************************"
 echo "Es steht ein neues Programm Update zur Verfügung"
 echo "---------------------------------------------------------"
 echo "Details:"
-type update_2.log
+type %TEMP_DIR%\update_2.log
 echo "---------------------------------------------------------"
 echo "Das Update wird jetzt eingespielt ..."
 echo "---------------------------------------------------------"
@@ -34,14 +38,15 @@ cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git pull
 %GIT_HOME%\bin\git log  --all --oneline -n1 > ../update_1.log
 cd ..
+copy update_1.log %TEMP_DIR%
+del update_1.log
 
-copy %PROGRAM_DIR%\scripts\update.bat .
-copy %PROGRAM_DIR%\scripts\start.bat .
+copy %PROGRAM_DIR%\scripts\update.bat . >NUL 2>NUL
+copy %PROGRAM_DIR%\scripts\start.bat . >NUL 2>NUL
 
 REM notwendige Programmbibliotheken installieren
-venv\Scripts\activate
-pip install requests
-pip install openpyxl
+venv\Scripts\pip install requests >NUL 2>NUL
+venv\Scripts\pip install openpyxl >NUL 2>NUL
 
 echo "---------------------------------------------------------"
 echo "Update fertig"

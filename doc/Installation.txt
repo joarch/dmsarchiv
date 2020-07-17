@@ -61,6 +61,7 @@ Zielverzeichnis\dmsarchiv.json (Exportkonfiguration)
 Zielverzeichnis\dmsarchiv\... (in dem Verzeichnis liegen die Programmdateien, diese werden durch das Update Skript
                                aktualisiert)
 Zielverzeichnis\venv (Python Virtual Environment: Laufzeitumgebung mit der das Programm ausgeführt wird)
+Zielverzeichnis\tmp (Ordner mit temporär Dateien)
 
 # Programm Update ausführen
 

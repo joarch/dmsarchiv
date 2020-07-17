@@ -5,6 +5,7 @@ Parameter für das Start und Update Skript.
 - PROGRAM_DIR: Pfad in der die Programm Dateien Sourcen liegen.
 - GIT_HOME: Absoluter Pfad in der Git installiert ist, das ist das Tool mit der Updates eingespielt werden.
             GIT=Open-Source-Tool zur verteilten Versionskontrolle von Software.
+- TEMP_DIR: temporär Verzeichnis, hier liegen Log-Files
 
 # INI-Datei (config.ini)
 

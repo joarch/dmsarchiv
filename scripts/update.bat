@@ -38,7 +38,10 @@ cd ..
 copy %PROGRAM_DIR%\scripts\update.bat .
 copy %PROGRAM_DIR%\scripts\start.bat .
 
-%PROGRAM_DIR%\scripts\install.bat
+REM notwendige Programmbibliotheken installieren
+venv\Scripts\activate
+pip install requests
+pip install openpyxl
 
 echo "---------------------------------------------------------"
 echo "Update fertig"

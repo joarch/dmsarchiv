@@ -37,6 +37,7 @@ cd %PROGRAM_DIR%
 cp %PROGRAM_DIR%\scripts\update.bat .
 cp %PROGRAM_DIR%\scripts\start.bat .
 
+%PROGRAM_DIR%\scripts\install.bat
 cd ..
 echo "---------------------------------------------------------"
 echo "Update fertig"

@@ -9,3 +9,5 @@ set PYTHONPATH=%PROGRAM_DIR%\src
 venv\Scripts\activate
 
 python dmsarchiv
+
+pause

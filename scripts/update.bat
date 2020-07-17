@@ -10,7 +10,7 @@ goto ENDE
 )
 
 REM Prüfe auf Programmänderungen (Update)
-cd %SOURCE_DIR%
+cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git fetch
 %GIT_HOME%\bin\git log --all --oneline -n1 > ../update_2.log
 cd ..
@@ -30,6 +30,7 @@ type update_2.log
 echo "---------------------------------------------------------"
 echo "Das Update wird jetzt eingespielt ..."
 echo "---------------------------------------------------------"
+cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git pull
 %GIT_HOME%\bin\git log  --all --oneline -n1 > ../update_1.log
 

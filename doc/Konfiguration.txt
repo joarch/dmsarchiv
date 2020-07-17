@@ -1,0 +1,47 @@
+# setenv.bat
+
+Parameter für das Start und Update Skript.
+
+- PROGRAM_DIR: Pfad in der die Programm Dateien Sourcen liegen.
+- GIT_HOME: Absoluter Pfad in der Git installiert ist, das ist das Tool mit der Updates eingespielt werden.
+            GIT=Open-Source-Tool zur verteilten Versionskontrolle von Software.
+
+# INI-Datei (config.ini)
+
+* Sektion: [PARAMETER]
+
+- dms_api_url: Url des DMS Server (Rest API), z.B. http://127.0.0.1:8180/api
+- dms_api_benutzer: Benutzer mit dem der Zugriff auf die API erfolgt
+- dms_api_passwort: Passwort des Benutzers
+
+* Sektion: [EXPORT]
+
+- export_parameter_datei: Konfigurations Datei für das Export Profil, z.B.: dmsarchiv.json
+- export_von_datum: das Von-Datum für den Zeitraum der zu exportierenden Dokumente
+- export_bis_datum: das Bis-Datum für den Zeitraum der zu exportierenden Dokumente
+                     (normalerweise leer, um alle geänderten Dokumente bis zum aktuellen Tag zu exportieren)
+
+- max_documents: Die maximale Anzahl an zu exportierende Dokumente
+- tage_offset: falls ein export_bis_datum angegeben wurde, werden hiermit die Tage angegeben
+               mit der das Bis Datum für den nachfolgenen Export erweitert wird
+
+Hinweise: - export_bis_datum und tage_offset ist nur dann notwendig, wenn die Gesamtzahl an Dokumenten
+            für den initialen Export zu groß ist.
+          - max_documents kann soweit angepasst werden, dass möglichst viele Dokumente exportiert werden können
+            ohne dass es beim DMS Server zu einem Timeout kommt
+
+Info-Parameter werden nach jedem erfolgreichen Export aktualisert:
+- info_api_max_count: monatliche maximale API Zugriffe (gekaufte Lizenz)
+- info_api_upload_count: Anzahl API Uploads im aktuellen Monat
+- info_api_download_count: Anzahl API Dowbloads im aktuellen Monat
+- info_min_ctimestamp: ältestes Änderungsdatum der zuletzt exportierten Dokumente
+- info_max_ctimestamp: jüngstes Änderungsdatum der zuletzt exportierten Dokumente
+- info_letzter_export: Datum des letzten Exports
+- info_letzter_export_von_datum: Von-Datum des letzten Export Zeitraums
+- info_letzter_export_anzahl_dokumente: Anzahl der zuletzt exportierten Dokumente
+
+# Export Profil Date (dmsarchiv.json)
+
+Hiermit wird der Export und die Zieldatei konfiguriert.
+Mit dem Parameter "suchparameter_list" können zusätzliche Filter definiert werden.
+Unter "export" stehen die Parameter zur Zieldatei.

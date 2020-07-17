@@ -1,3 +1,5 @@
+Zur Installation die folgenden Punkte einmalig ausgeführen.
+
 # Installation GIT
 
 Git ist ein VCS für Programmupdates, d.h. die Versionsverwaltung für die Programmdateien.
@@ -7,16 +9,19 @@ https://git-scm.com
 
 # Installation Python (Version >= 3.8)
 
-Python ist die Programmiersprache und Laufzeitumgebung.
+Python ist die Programmiersprache in der das Programm geschrieben wurde und gleichzeitig die Laufzeitumgebung
+mit der das Programm ausgeführt wird.
 
 https://www.python.org/downloads/
 
-# Programm mittels git runterladen
+# Programm mittels git initial runterladen
 
 - Git Bash starten
 - cd in das Zielverzeichnis
 - git clone https://github.com/joarch/dmsarchiv.git
   (es wird ein Unterordner dmsarchiv erstellt, hier liegen die Programmdateien: Zielverzeichnis\dmsarchiv)
+
+Hinweis: spätere Programmupdates können durch ein Update Skript einfacher durchgeführt werden.
 
 # Virtual Environment einrichten
 
@@ -27,29 +32,45 @@ Diese ist dann isoliert von anderen Python Laufzeitumgebungen, bzw. anderen Pyth
 - cd in das Zielverzeichnis
 - python -m venv venv
   (es wird ein Unterordner venv erstellt, in dem die Virtual Environment installiert wird: Zielverzeichnis\venv)
-- Zielverzeichnis\venv\Scripts\activate
-  (damit wird die Virtual Environment gestartet, alle weiteren Python Befehle benutzen dann diese Umgebung)
-- pip install requests
-  (Installation der notwendigen Bibliothek in venv)
-- pip install openpyxl
 
 # Programm einrichten und starten
 
 - Zielverzeichnis\dmsarchiv\config\config_vorlage.ini als Zielverzeichnis\config.ini speichern
   und anpassen
-  (Anpassung der Konfiguration Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt
+  (siehe Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt)
+- Zielverzeichnis\dmsarchiv\config\dmsarchiv_vorlage.json als Zielverzeichnis\dmsarchiv.json speichern
+  und anpassen
+  (siehe Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt)
 - Zielverzeichnis\dmsarchiv\scripts\setenv_vorlage.bat als Zielverzeichnis\setenv.bat speichern
   und anpassen
-- Zielverzeichnis\dmsarchiv\scripts\update.bat aufrufen
-  (die Sktipte start.bat und update.bat werden automatisch in Zielverzeichnis kopiert)
+- Zielverzeichnis\dmsarchiv\scripts\update.bat ins Zielverzeichnis kopieren
+- Zielverzeichnis\dmsarchiv\scripts\start.bat ins Zielverzeichnis kopieren
 
-# Programm starten
+Die Sktipte Zielverzeichnis\start.bat und Zielverzeichnis\update.bat werden später bei jedem Update ersetzt bzw.
+aktualisiert.
 
-- Zielverzeichnis\start.bat
+Die Konfigurationen Zielverzeichnis\config.ini und Zielverzeichnis\setenv.bat bleiben bei jedem Update erhalten.
+
+# Zusammenfassung
+
+Zielverzeichnis\start.bat (Start Skript)
+Zielverzeichnis\update.bat (Update Skripte)
+Zielverzeichnis\setenv.bat (Umgebungsparameter für die Start und Update bat-Dateien)
+Zielverzeichnis\config.ini (Programmkonfiguration)
+Zielverzeichnis\dmsarchiv.json (Exportkonfiguration)
+Zielverzeichnis\dmsarchiv\... (in dem Verzeichnis liegen die Programmdateien, diese werden durch das Update Skript
+                               aktualisiert)
+Zielverzeichnis\venv (Python Virtual Environment: Laufzeitumgebung mit der das Programm ausgeführt wird)
 
 # Programm Update ausführen
 
 - Zielverzeichnis\update.bat
+
+Das Update kann später genutzt werden, um Programmänderungen automatisch einzuspielen.
+
+# Programm starten
+
+- Zielverzeichnis\start.bat
 
 # Initialer Export
 

@@ -4,5 +4,8 @@ REM Start des Programmes
 REM
 call setenv.bat
 
-test
-export
+set PYTHONPATH=%PROGRAM_DIR%\src
+
+venv\Scripts\activate
+
+python dmsarchiv

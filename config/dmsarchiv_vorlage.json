@@ -1,6 +1,5 @@
 {
   "name": "Standardexport",
-  "export_format": "xlsx",
   "json_export_datei": "export_documents.json",
   "log_datei": "export.log",
   "suchparameter_list": [
@@ -11,6 +10,7 @@
     }
   ],
   "export": {
+    "export_format": "xlsx",
     "dateiname": "export_documents.xlsx",
     "spaltenueberschrift": "ja",
     "spaltenueberschrift_format": {

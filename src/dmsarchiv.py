@@ -1,17 +1,19 @@
 import configparser
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from decimal import Decimal
+from getopt import getopt, GetoptError
 from typing import List, Dict
 
 import requests
 from requests.auth import HTTPBasicAuth
 
-import export_excel
+from export_excel import export_nach_excel
 
-DEFAULT_PROFIL = "config/config.ini:PARAMETER"
-DEFAULT_EXPORT_PROFIL = "config/config.ini:EXPORT"
+DEFAULT_PARAMETER_SECTION = "config/config.ini:PARAMETER"
+DEFAULT_EXPORT_PARAMETER_SECTION = "config/config.ini:EXPORT"
 
 PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"
@@ -20,7 +22,8 @@ PARAM_PASSWD = "dms_api_passwort"
 DEFAULT_EXPORT_VON_DATUM = "01.01.2010"
 
 
-def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_von_datum=None, export_bis_datum=None,
+def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAMETER_SECTION, export_von_datum=None,
+           export_bis_datum=None,
            max_documents=None, tage_offset=None):
     # TODO LOG File schreiben
     # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
@@ -129,10 +132,10 @@ def export(profil=DEFAULT_PROFIL, export_profil=DEFAULT_EXPORT_PROFIL, export_vo
     os.remove(json_export_datei_tmp)
 
     # Excel Export
-    if export_parameter["export_format"] == "xlsx":
-        export_excel(documents, export_parameter["export"])
+    if export_parameter["export"]["export_format"] == "xlsx":
+        export_nach_excel(documents, export_parameter["export"])
     else:
-        raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export_format']}")
+        raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export']['export_format']}")
 
     # Export Info (letzter Export Zeitstempel und DMS API Info) in die Config-Datei zurückschreiben
     _write_config(export_profil, export_info)
@@ -240,5 +243,38 @@ def json_serial(obj):
     raise TypeError("Type not serializable")
 
 
+def main(argv):
+    """
+    Export DMS Dokumenten Infos. Das Zielformat wird über das Export Profil übergeben.
+    Programmargumente:
+    - parameter (INI-Datei und Section): z.B.: 'config.ini:PARAMETER'
+    - export_parameter (INI-Datei und Section): z.B.: 'config.ini:EXPORT'
+    """
+    hilfe = f"{os.path.basename(__file__)} -p <parameter> -e <export_parameter>"
+    parameter = ""
+    export_parameter = ""
+    try:
+        opts, args = getopt(argv, "hp:e:", ["parameter=", "export_parameter="])
+    except GetoptError:
+        print(hilfe)
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(hilfe)
+            sys.exit()
+        elif opt in ("-p", "--parameter"):
+            parameter = arg
+        elif opt in ("-e", "--export_parameter"):
+            export_parameter = arg
+
+    if not parameter:
+        parameter = DEFAULT_PARAMETER_SECTION
+    if not export_parameter:
+        export_parameter = DEFAULT_EXPORT_PARAMETER_SECTION
+
+    export(parameter, export_parameter)
+
+
 if __name__ == '__main__':
-    pass
+    main(sys.argv[1:])

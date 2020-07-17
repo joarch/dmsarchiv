@@ -133,7 +133,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
 
     # Excel Export
     if export_parameter["export"]["export_format"] == "xlsx":
-        export_nach_excel(documents, export_parameter["export"])
+        export_nach_excel(result, export_parameter["export"])
     else:
         raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export']['export_format']}")
 

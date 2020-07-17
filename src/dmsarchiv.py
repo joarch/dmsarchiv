@@ -12,8 +12,8 @@ from requests.auth import HTTPBasicAuth
 
 from export_excel import export_nach_excel
 
-DEFAULT_PARAMETER_SECTION = "config/config.ini:PARAMETER"
-DEFAULT_EXPORT_PARAMETER_SECTION = "config/config.ini:EXPORT"
+DEFAULT_PARAMETER_SECTION = "config.ini:PARAMETER"
+DEFAULT_EXPORT_PARAMETER_SECTION = "config.ini:EXPORT"
 
 PARAM_URL = "dms_api_url"
 PARAM_USER = "dms_api_benutzer"

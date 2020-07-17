@@ -6,8 +6,6 @@ call setenv.bat
 
 set PYTHONPATH=%PROGRAM_DIR%\src
 
-venv\Scripts\activate
-
-python dmsarchiv
+venv\Scripts\python %PYTHONPATH%\dmsarchiv.py
 
 pause

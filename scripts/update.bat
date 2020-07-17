@@ -16,9 +16,9 @@ cd %PROGRAM_DIR%
 %GIT_HOME%\bin\git fetch
 %GIT_HOME%\bin\git log --all --oneline -n1 > ../update_2.log
 cd ..
-copy update_2.log %TEMP_DIR%
-del update_2.log
-fc %TEMP_DIR%\update_1.log %TEMP_DIR%\update_2.log
+copy update_2.log %TEMP_DIR% >NUL
+del update_2.log >NUL
+fc %TEMP_DIR%\update_1.log %TEMP_DIR%\update_2.log >NUL
 if errorlevel 1 goto UPDATE
 
 echo "Kein Update notwendig."

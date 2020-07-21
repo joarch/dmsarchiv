@@ -1,0 +1,6 @@
+- Nur neue Dokumente in der Zieldatei speichern
+-- die Zieldatei fortlaufend erweitern, keine alten Einträge löschen
+
+- Export JSON Datei nach dem Export löschen
+
+- log_datei schreiben

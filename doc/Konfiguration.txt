@@ -2,10 +2,10 @@
 
 Parameter für das Start und Update Skript.
 
-- PROGRAM_DIR: Pfad in der die Programm Dateien Sourcen liegen.
 - GIT_HOME: Absoluter Pfad in der Git installiert ist, das ist das Tool mit der Updates eingespielt werden.
             GIT=Open-Source-Tool zur verteilten Versionskontrolle von Software.
-- TEMP_DIR: temporär Verzeichnis, hier liegen Log-Files
+- TEMP_DIR: temporär Verzeichnis, hier liegen Log-Files (wird automatisch erzeugt)
+- PROGRAM_DIR: Pfad in der die Programm Dateien liegen
 
 # INI-Datei (config.ini)
 
@@ -17,24 +17,26 @@ Parameter für das Start und Update Skript.
 
 * Sektion: [EXPORT]
 
-- export_parameter_datei: Konfigurations Datei für das Export Profil, z.B.: dmsarchiv.json
-- export_von_datum: das Von-Datum für den Zeitraum der zu exportierenden Dokumente
-- export_bis_datum: das Bis-Datum für den Zeitraum der zu exportierenden Dokumente
-                     (normalerweise leer, um alle geänderten Dokumente bis zum aktuellen Tag zu exportieren)
-
-- max_documents: Die maximale Anzahl an zu exportierende Dokumente
+- export_parameter_datei: Konfigurationsdatei für das Export Profil, z.B.: dmsarchiv.json
+- max_documents: Die maximale Anzahl an zu exportierende Dokumente (evtl. DMS API Einschränkung von z.B. 1000)
 - tage_offset: falls ein export_bis_datum angegeben wurde, werden hiermit die Tage angegeben
-               mit der das Bis Datum für den nachfolgenen Export erweitert wird
+               mit der das Bis Datum für den nachfolgenden Export erweitert wird
+- export_von_datum: das Von-Datum für den Zeitraum der zu exportierenden Dokumente
+- export_von_datum: das Bis-Datum für den Zeitraum der zu exportierenden Dokumente
+                     (normalerweise leer, um alle geänderten Dokumente bis zum aktuellen Tag zu exportieren)
 
 Hinweise: - export_bis_datum und tage_offset ist nur dann notwendig, wenn die Gesamtzahl an Dokumenten
             für den initialen Export zu groß ist.
           - max_documents kann soweit angepasst werden, dass möglichst viele Dokumente exportiert werden können
             ohne dass es beim DMS Server zu einem Timeout kommt
+          - export_von_datum und export_von_datum werden nach jedem Export Lauf automatisch aktualisiert,
+            so dass immer nur die neuesten Dokumente, d.h. die Dokumente die nach dem letzten export_von_datum
+            geändert wurden, exportiert werden
 
-Info-Parameter werden nach jedem erfolgreichen Export aktualisert:
+Info-Parameter werden nach jedem erfolgreichen Export Lauf aktualisiert:
 - info_api_max_count: monatliche maximale API Zugriffe (gekaufte Lizenz)
 - info_api_upload_count: Anzahl API Uploads im aktuellen Monat
-- info_api_download_count: Anzahl API Dowbloads im aktuellen Monat
+- info_api_download_count: Anzahl API Downloads im aktuellen Monat
 - info_min_ctimestamp: ältestes Änderungsdatum der zuletzt exportierten Dokumente
 - info_max_ctimestamp: jüngstes Änderungsdatum der zuletzt exportierten Dokumente
 - info_letzter_export: Datum des letzten Exports

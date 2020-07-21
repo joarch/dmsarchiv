@@ -1,8 +1,8 @@
-Zur Installation die folgenden Punkte einmalig ausgeführen.
+Zur Installation sollten die folgenden Punkte einmalig ausgeführt werden.
 
 # Installation GIT
 
-Git ist ein VCS für Programmupdates, d.h. die Versionsverwaltung für die Programmdateien.
+Git ist ein VCS für Programm Updates, d.h. die Versionsverwaltung für die Programmdateien.
 Es wird zusätzlich eine Git Bash installiert, in der die Git Operationen ausgeführt werden können.
 
 https://git-scm.com
@@ -14,14 +14,14 @@ mit der das Programm ausgeführt wird.
 
 https://www.python.org/downloads/
 
-# Programm mittels git initial runterladen
+# Programm mittels git initial klonen (herunterladen)
 
 - Git Bash starten
 - cd in das Zielverzeichnis
 - git clone https://github.com/joarch/dmsarchiv.git
   (es wird ein Unterordner dmsarchiv erstellt, hier liegen die Programmdateien: Zielverzeichnis\dmsarchiv)
 
-Hinweis: spätere Programmupdates können durch ein Update Skript einfacher durchgeführt werden.
+Hinweis: spätere Programm Updates können durch ein Update Skript einfacher durchgeführt werden.
 
 # Virtual Environment einrichten
 
@@ -41,17 +41,21 @@ Diese ist dann isoliert von anderen Python Laufzeitumgebungen, bzw. anderen Pyth
 - Zielverzeichnis\dmsarchiv\config\dmsarchiv_vorlage.json als Zielverzeichnis\dmsarchiv.json speichern
   und anpassen
   (siehe Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt)
-- Zielverzeichnis\dmsarchiv\scripts\setenv_vorlage.bat als Zielverzeichnis\setenv.bat speichern
+- Zielverzeichnis\dmsarchiv\config\setenv_vorlage.bat als Zielverzeichnis\setenv.bat speichern
   und anpassen
+  (siehe Dokumentation in Zielverzeichnis\dmsarchiv\Konfiguration.txt)
 - Zielverzeichnis\dmsarchiv\scripts\update.bat ins Zielverzeichnis kopieren
 - Zielverzeichnis\dmsarchiv\scripts\start.bat ins Zielverzeichnis kopieren
 
-Die Sktipte Zielverzeichnis\start.bat und Zielverzeichnis\update.bat werden später bei jedem Update ersetzt bzw.
+Hinweis: Die Skripte Zielverzeichnis\start.bat und Zielverzeichnis\update.bat werden später bei jedem Update ersetzt bzw.
 aktualisiert.
 
-Die Konfigurationen Zielverzeichnis\config.ini und Zielverzeichnis\setenv.bat bleiben bei jedem Update erhalten.
+Die Konfigurationen Zielverzeichnis\config.ini, Zielverzeichnis\dmsarchiv.json
+und Zielverzeichnis\setenv.bat bleiben bei jedem Update erhalten.
 
 # Zusammenfassung
+
+Die Verzeichnisstruktur sollte folgendermaßen aussehen:
 
 Zielverzeichnis\start.bat (Start Skript)
 Zielverzeichnis\update.bat (Update Skripte)
@@ -61,22 +65,27 @@ Zielverzeichnis\dmsarchiv.json (Exportkonfiguration)
 Zielverzeichnis\dmsarchiv\... (in dem Verzeichnis liegen die Programmdateien, diese werden durch das Update Skript
                                aktualisiert)
 Zielverzeichnis\venv (Python Virtual Environment: Laufzeitumgebung mit der das Programm ausgeführt wird)
-Zielverzeichnis\tmp (Ordner mit temporär Dateien)
+Zielverzeichnis\tmp (Ordner mit temporär Dateien, wird beim Start automatisch angelegt)
 
 # Programm Update ausführen
 
+Dazu das Update Skript manuell starten:
 - Zielverzeichnis\update.bat
 
 Das Update kann später genutzt werden, um Programmänderungen automatisch einzuspielen.
 
 # Programm starten
 
+Dazu das Start Skript doppelklicken, oder im cmd Fenster ausführen:
 - Zielverzeichnis\start.bat
 
-# Initialer Export
+# Probleme
 
-- bei "Fehlermeldung Achtung es wurden evtl. nicht alle Dokumente exportiert..."
+- Initial Export:
+-- bei der "Fehlermeldung Achtung es wurden evtl. nicht alle Dokumente exportiert..."
   muss das export_von_datum und das export_bis_datum in der config.ini Datei entsprechend
   angepasst werden. Der Zeitraum muss so gewählt werden, das die Anzahl an maximalen Dokumenten
-  nicht erreicht wird. Beim nächsten Ausführen wird die Zeitscheibe automatisch um die konfigurierten Tage
+  nicht erreicht wird - kein Programmabbruch.
+  Beim nächsten erfolgreichen Export Lauf wird die Zeitscheibe automatisch um die konfigurierten Tage
   erweitert. Das Programm muss dann solange erneut ausgeführt werden, bis das Tagesdatum erreicht ist.
+  Ist das Tagesdatum erreicht, wird das export_bis_datum in der ini-Datei geleert.

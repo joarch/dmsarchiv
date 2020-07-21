@@ -152,7 +152,7 @@ def _search_documents(api_url, cookies, von_datum, suchparameter_list,
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann
-    # TODO sicherheitshalber oder reicht >=
+    # zusätzlich (sicherheitshalber) Vergleich mit >=
     von_datum = von_datum.date() - timedelta(days=1)
 
     von_datum = von_datum.strftime("%Y-%m-%d")

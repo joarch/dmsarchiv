@@ -1,4 +1,6 @@
-- Nur neue Dokumente in der Zieldatei speichern
+- classifyAttribut Namen aus dem DMS auslesen und in der Konfiguration verwenden
+
+- Nur neue Dokumente in der Zieldatei speichern?
 -- die Zieldatei fortlaufend erweitern, keine alten Einträge löschen
 
 - Export JSON Datei nach dem Export löschen

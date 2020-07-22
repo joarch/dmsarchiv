@@ -148,7 +148,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
 
 
 def _json_load(filename):
-    encodings = ['utf-8', 'windows-1250', 'windows-1252', 'iso-8859-1', 'cp1252']
+    encodings = ['utf-8-sig', 'utf-8', 'windows-1250', 'windows-1252', 'iso-8859-1', 'cp1252']
     for encoding in encodings:
         try:
             with open(filename, encoding=encoding) as file:

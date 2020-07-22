@@ -162,8 +162,9 @@ def _json_load(filename):
         f"Folgende Formate wurden nicht erkannt '{encodings}'.")
 
 
-def _search_documents(api_url, cookies, von_datum, suchparameter_list=[],
+def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
                       bis_datum=None, max_documents=1000) -> List[Dict]:
+    suchparameter_list = suchparameter_list or []
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
     # da die DMS API Suche nicht mit einem Zeitstempel umgehen kann

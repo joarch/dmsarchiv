@@ -5,6 +5,7 @@ import sys
 from datetime import datetime, timedelta
 from decimal import Decimal
 from getopt import getopt, GetoptError
+from json.decoder import JSONDecodeError
 from typing import List, Dict
 
 import requests
@@ -45,8 +46,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     export_bis_datum = parameter_export["export_bis_datum"] if export_bis_datum is None else export_bis_datum
     max_documents = int(parameter_export["max_documents"]) if max_documents is None else max_documents
     tage_offset = int(parameter_export["tage_offset"]) if tage_offset is None else tage_offset
-    with open(parameter_export["export_parameter_datei"], encoding="utf-8") as file:
-        export_parameter = json.load(file)
+    export_parameter = _json_load(parameter_export["export_parameter_datei"])
 
     if not export_von_datum:
         export_von_datum = DEFAULT_EXPORT_VON_DATUM
@@ -145,6 +145,21 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
         f"Anzahl exportiert: {result['anzahl_exportiert']}, "
         f"Anzahl neu: {result['anzahl_neu']}, "
         f"Anzahl gesamt: {result['anzahl']}.")
+
+
+def _json_load(filename):
+    encodings = ["utf-8", 'windows-1250', 'windows-1252', 'iso-8859-1']
+    for encoding in encodings:
+        try:
+            with open(filename, encoding=encoding) as file:
+                export_parameter = json.load(file)
+            return export_parameter
+        except JSONDecodeError:
+            # TODO log warning
+            pass
+    raise RuntimeError(
+        f"Fehler beim Lesen der Datei '{filename}', unbekanntes Encoding Format. "
+        f"Folgende Formate wurden nicht erkannt '{encodings}'.")
 
 
 def _search_documents(api_url, cookies, von_datum, suchparameter_list,

@@ -54,7 +54,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     # DMS API Search
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
-    documents = _search_documents(api_url, cookies, export_von_datum, export_parameter["suchparameter_list"],
+    documents = _search_documents(api_url, cookies, export_von_datum, export_parameter.get("suchparameter_list"),
                                   bis_datum=export_bis_datum, max_documents=max_documents)
 
     # Dokumenten Export Informationen auswerten
@@ -162,7 +162,7 @@ def _json_load(filename):
         f"Folgende Formate wurden nicht erkannt '{encodings}'.")
 
 
-def _search_documents(api_url, cookies, von_datum, suchparameter_list,
+def _search_documents(api_url, cookies, von_datum, suchparameter_list=[],
                       bis_datum=None, max_documents=1000) -> List[Dict]:
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,

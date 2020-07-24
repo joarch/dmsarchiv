@@ -89,8 +89,8 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
         export_von_datum = datetime.now().strftime("%d.%m.%Y")
 
     export_info["info_letzter_export_anzahl_dokumente"] = len(documents)
-    export_info["info_min_ctimestamp"] = min_ctimestamp.strftime("%d.%m.%Y")
-    export_info["info_max_ctimestamp"] = max_ctimestamp.strftime("%d.%m.%Y")
+    export_info["info_min_ctimestamp"] = min_ctimestamp.strftime("%d.%m.%Y") if min_ctimestamp else export_von_datum
+    export_info["info_max_ctimestamp"] = max_ctimestamp.strftime("%d.%m.%Y") if max_ctimestamp else ""
     # - Export Parameter für den nächsten Export
     export_info["export_von_datum"] = export_von_datum
     export_info["export_bis_datum"] = export_bis_datum

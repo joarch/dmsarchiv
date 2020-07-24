@@ -182,8 +182,13 @@ def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
     for suchparameter in suchparameter_list:
         search_parameter.append(suchparameter)
 
+    such_data = json.dumps(search_parameter)
+
+    # TODO logging debug
+    print(f"suche mit: {json.dumps(search_parameter)}")
+
     r = requests.post("{}/searchDocumentsExt?maxDocumentCount={}".format(api_url, max_documents),
-                      data=json.dumps(search_parameter),
+                      data=such_data,
                       cookies=cookies, headers=_headers())
     _assert_request(r)
     return json.loads(r.text)

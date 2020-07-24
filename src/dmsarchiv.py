@@ -26,8 +26,7 @@ CLASSIFY_ATTRIBUTES_FILENAME = "classify_attributes.json"
 
 
 def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAMETER_SECTION, export_von_datum=None,
-           export_bis_datum=None,
-           max_documents=None, tage_offset=None):
+           export_bis_datum=None, max_documents=None, tage_offset=None, debug=None):
     # TODO LOG File schreiben
     # TODO timeit Zeit loggen bzw. als info_dauer in ini speichern
 
@@ -56,6 +55,9 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     tage_offset = int(parameter_export["tage_offset"]) if tage_offset is None else tage_offset
     export_parameter = _json_load(parameter_export["export_parameter_datei"])
 
+    if debug is None:
+        debug = export_parameter.get("debug") == "true"
+
     if not export_von_datum:
         export_von_datum = DEFAULT_EXPORT_VON_DATUM
 
@@ -63,7 +65,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     export_info["info_letzter_export"] = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
     export_info["info_letzter_export_von_datum"] = export_von_datum
     documents = _search_documents(api_url, cookies, export_von_datum, export_parameter.get("suchparameter_list"),
-                                  bis_datum=export_bis_datum, max_documents=max_documents)
+                                  bis_datum=export_bis_datum, max_documents=max_documents, debug=debug)
 
     # Dokumenten Export Informationen auswerten
     ctimestamps = list(map(lambda d: datetime.strptime(d["classifyAttributes"]["ctimestamp"], "%Y-%m-%d %H:%M:%S"),
@@ -171,7 +173,7 @@ def _json_load(filename):
 
 
 def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
-                      bis_datum=None, max_documents=1000) -> List[Dict]:
+                      bis_datum=None, max_documents=1000, debug=False) -> List[Dict]:
     suchparameter_list = suchparameter_list or []
     von_datum = datetime.strptime(von_datum, "%d.%m.%Y")
     # Search-Date -1 Tag, vom letzten Lauf aus,
@@ -192,14 +194,19 @@ def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
 
     such_data = json.dumps(search_parameter)
 
-    # TODO logging debug
-    print(f"suche mit: {json.dumps(search_parameter)}")
+    if debug:
+        print(f"Suche mit: {json.dumps(search_parameter)}")
 
     r = requests.post("{}/searchDocumentsExt?maxDocumentCount={}".format(api_url, max_documents),
                       data=such_data,
                       cookies=cookies, headers=_headers())
     _assert_request(r)
-    return json.loads(r.text)
+    documents = json.loads(r.text)
+
+    if debug:
+        print(f"Suche Fertig. Anzahl Dokumente : {len(documents)}")
+
+    return documents
 
 
 def _get_statistics(api_url, cookies):
@@ -259,6 +266,7 @@ def _write_config(profil, new_params):
     config_section = split[1]
     config = configparser.ConfigParser()
     config.read(config_file)
+    # merge alte und neue Parameter
     for section in config.sections():
         if section == config_section:
             for key, value in new_params.items():

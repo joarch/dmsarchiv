@@ -34,6 +34,9 @@ Parameter für das Start und Update Skript.
 - export_von_datum: das Von-Datum für den Zeitraum der zu exportierenden Dokumente
 - export_von_datum: das Bis-Datum für den Zeitraum der zu exportierenden Dokumente
                      (normalerweise leer, um alle geänderten Dokumente bis zum aktuellen Tag zu exportieren)
+- debug: wenn true, werden zusätzliche Infos während der Programmausführung ausgegeben.
+         'debug = true' zusätzliche Programm Ausgaben
+         'debug = false' keine zusätzlichen Programm Ausgaben
 
 Hinweise: - export_bis_datum und tage_offset ist nur dann notwendig, wenn die Gesamtzahl an Dokumenten
             für den initialen Export zu groß ist.

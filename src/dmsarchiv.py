@@ -56,7 +56,7 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     export_parameter = _json_load(parameter_export["export_parameter_datei"])
 
     if debug is None:
-        debug = export_parameter.get("debug") == "true"
+        debug = parameter_export.get("debug") == "true"
 
     if not export_von_datum:
         export_von_datum = DEFAULT_EXPORT_VON_DATUM

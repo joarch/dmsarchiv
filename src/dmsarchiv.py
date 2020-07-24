@@ -22,6 +22,8 @@ PARAM_PASSWD = "dms_api_passwort"
 
 DEFAULT_EXPORT_VON_DATUM = "01.01.2010"
 
+CLASSIFY_ATTRIBUTES_FILENAME = "classify_attributes.json"
+
 
 def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAMETER_SECTION, export_von_datum=None,
            export_bis_datum=None,
@@ -38,6 +40,12 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     export_info["info_api_download_count"] = api_statistics["uploadCount"]
     export_info["info_api_upload_count"] = api_statistics["downloadCount"]
     export_info["info_api_max_count"] = api_statistics["maxCount"]
+
+    # DMS API Klassifizierungsattribute auslesen, wenn noch nicht vorhanden
+    if not os.path.exists(CLASSIFY_ATTRIBUTES_FILENAME):
+        classify_attributes = _get_classify_attributes(api_url, cookies)
+        with open(CLASSIFY_ATTRIBUTES_FILENAME, 'w', encoding='utf-8') as outfile:
+            json.dump(classify_attributes, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
 
     # Konfiguration lesen
     parameter_export = _get_config(export_profil)
@@ -196,6 +204,12 @@ def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
 
 def _get_statistics(api_url, cookies):
     r = requests.get("{}/apiStatistics".format(api_url), cookies=cookies, headers=_headers())
+    _assert_request(r)
+    return json.loads(r.text)
+
+
+def _get_classify_attributes(api_url, cookies):
+    r = requests.get("{}/classifyAttributes".format(api_url), cookies=cookies, headers=_headers())
     _assert_request(r)
     return json.loads(r.text)
 

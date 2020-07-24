@@ -1,3 +1,13 @@
+# Allgemein
+
+Vorlagen zu den Konfigurationsdateien sind im Ordner Zielverzeichnis\config zu finden.
+
+Nach der Installation sollten alle Konfigurationsdateien im Zielverzeichnis liegen, das erleichtert den späteren
+Update Prozess:
+- Zielverzeichnis\setenv.bat
+- Zielverzeichnis\config.ini
+- Zielverzeichnis\dmsarchiv.json
+
 # setenv.bat
 
 Parameter für das Start und Update Skript.
@@ -47,4 +57,22 @@ Info-Parameter werden nach jedem erfolgreichen Export Lauf aktualisiert:
 
 Hiermit wird der Export und die Zieldatei konfiguriert.
 Mit dem Parameter "suchparameter_list" können zusätzliche Filter definiert werden.
+
+Beispiel für zwei zusätzliche Suchparameter:
+suchparameter_list: [
+    {
+          "classifyAttribut": "dyn_0_....",
+          "searchOperator": "=",
+          "searchValue": "TEST"
+    },
+    {
+          "classifyAttribut": "dyn_0_....",
+          "searchOperator": ">=",
+          "searchValue": "2020-01-01"
+    },
+]
+
+Als classifyAttribut müsse die internen Namen der Klassifizierungsattribute angegeben werden.
+Die Namen stehen nach dem ersten erfolgreichen Connect zum DMS in der Datei: classify_attributes.json
+
 Unter "export" stehen die Parameter zur Zieldatei.

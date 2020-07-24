@@ -1,0 +1,6 @@
+# DMS Debugging:
+http://<hot>:8180/api/startDebug
+http://<host>:8180/swagger-ui.html#/eco-dms-rest-controller
+
+# Liste definierter Klassifizierungsattribute ausgeben:
+http://<host>:8180/api/classifyAttributes

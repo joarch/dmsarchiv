@@ -3,11 +3,6 @@
   "json_export_datei": "export_documents.json",
   "log_datei": "export.log",
   "suchparameter_list": [
-    {
-      "classifyAttribut": "dyn_0_1506678275401",
-      "searchOperator": "=",
-      "searchValue": "TEST"
-    }
   ],
   "export": {
     "export_format": "xlsx",

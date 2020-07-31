@@ -7,12 +7,46 @@
   "export": {
     "export_format": "xlsx",
     "dateiname": "export_documents.xlsx",
+    "datei_postfix": "_%Y-%m-%d",
+    "fortlaufendes_feld": "nummer_sorierung",
     "spaltenueberschrift": "ja",
     "spaltenueberschrift_format": {
       "format": "PatternFill",
       "start_color": "AAAAAA",
       "end_color": "AAAAAA",
       "fill_type": "solid"
+    },
+    "formate": [
+      {
+        "match": "^Warnung .*",
+        "format": {
+          "format": "PatternFill",
+          "start_color": "FFFF00",
+          "end_color": "FFFF00",
+          "fill_type": "solid"
+        }
+      },
+      {
+        "match": "^Fehler .*",
+        "format": {
+          "format": "PatternFill",
+          "start_color": "FF0000",
+          "end_color": "FF0000",
+          "fill_type": "solid"
+        }
+      }
+    ],
+    "sortierung": {
+      "felder": [
+        {
+          "feld": "nummer_sorierung",
+          "wie": "aufsteigend"
+        },
+        {
+          "feld": "docId",
+          "wie": "aufsteigend"
+        }
+      ]
     },
     "spalten": [
       {
@@ -31,6 +65,30 @@
       {
         "feld": "",
         "ueberschrift": "Geprüft"
+      },
+      {
+        "feld": "dyn_1_1526633932510",
+        "ueberschrift": "Nummer",
+        "type": "string"
+      },
+      {
+        "feld": "dyn_1_1526633932510",
+        "alias": "nummer_sorierung",
+        "type": "int",
+        "mapping": {
+          "methode": "sub",
+          "argumente": [
+            "^18\\.|19\\.|20\\.",
+            ""
+          ]
+        },
+        "ueberschrift": "Nummer zur Sortierung"
+      },
+      {
+        "feld": "",
+        "alias": "warnung",
+        "computed": "'Warnung nicht fortlaufend' if nicht_fortlaufend() else ''",
+        "ueberschrift": "Warnung"
       }
     ]
   }

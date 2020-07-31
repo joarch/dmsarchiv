@@ -14,11 +14,27 @@ from openpyxl.utils import get_column_letter
 
 
 def export_nach_excel(documents, export_profil):
+    # TODO datei_postfix auswerten, wenn gleiche Datei, dann fortlaufend speichern (anhängen oder aktualisieren)
+
+    fortlaufendes_feld = export_profil.get("fortlaufendes_feld")
+    max_fortlaufendes_feld = -1
+    filename_fortlaufendes_feld = None
+    if fortlaufendes_feld:
+        filename_fortlaufendes_feld = os.path.join(
+            os.path.dirname(export_profil["dateiname"]),
+            os.path.splitext(os.path.basename(export_profil["dateiname"]))[0] + "_" +
+            "fortlaufendes_feld.txt"
+        )
+        with open(filename_fortlaufendes_feld, 'r', encoding='utf-8') as outfile:
+            value = outfile.read()
+            if value:
+                max_fortlaufendes_feld = int(value)
+
     wb = Workbook()
     ws = wb.active
     # ws.title = ...
 
-    row = 1
+    row_idx = 1
 
     # mit Spaltenüberschrifen
     if export_profil["spaltenueberschrift"].lower() == "ja":
@@ -37,20 +53,30 @@ def export_nach_excel(documents, export_profil):
             column_header = PatternFill(start_color='AAAAAA',
                                         end_color='AAAAAA',
                                         fill_type='solid')
-        column = 1
+        column_idx = 1
         for spalte in export_profil["spalten"]:
-            ws.cell(column=column, row=row, value=spalte["ueberschrift"])
-            col = ws["{}{}".format(get_column_letter(column), row)]
+            ws.cell(column=column_idx, row=row_idx, value=spalte["ueberschrift"])
+            col = ws["{}{}".format(get_column_letter(column_idx), row_idx)]
             col.font = Font(bold=True)
             col.fill = column_header
-            column += 1
-        row += 1
+            column_idx += 1
+        row_idx += 1
 
+    # Zeilen und Spalten aus den Dokumenten anhand Export Profil ermitteln
+    rows = list()
     for document in documents["documents"]:
-        column = 1
+        columns = list()
+        rows.append(columns)
 
         for spalte in export_profil["spalten"]:
+            column = dict()
+            columns.append(column)
+
             feld_name = spalte["feld"]
+            if spalte.get("alias"):
+                column["feld_name"] = spalte["alias"]
+            else:
+                column["feld_name"] = spalte["feld"]
             mapped_value = ""
 
             if feld_name:
@@ -62,23 +88,104 @@ def export_nach_excel(documents, export_profil):
                 else:
                     raise RuntimeError(
                         f"Die Spalte '{feld_name}' existiert nicht im Dokument. Bitte Export-Profil überprüfen.")
-                mapped_value = map_str_value(value)
+
+                # Mapping
+                mapping_def = spalte.get("mapping")
+                if mapping_def is not None:
+                    # konfiguriertes Mapping anwenden
+                    # - zuerst immer in String umwandeln, das Mapping geht aktuell nur mir RegEx
+                    mapped_value = map_value(value, "string")
+                    re_operation = getattr(re, mapping_def["methode"])
+                    argumente = mapping_def["argumente"]
+                    if len(argumente) == 2:
+                        mapped_value = re_operation(argumente[0], argumente[1], mapped_value)
+                    else:
+                        raise RuntimeError(
+                            f"Fehler beim Mapping zum Feld '{feld_name}'. "
+                            f"Es werden nur 2 Argument unterstützt.")
+                    mapped_value = map_value(mapped_value, spalte.get("type"))
+                else:
+                    mapped_value = map_value(value, spalte.get("type"))
             else:
                 # keine Feld Name, damit bleibt die Spalte leer
                 pass
 
-            cell = ws.cell(column=column, row=row, value=mapped_value)
+            column["value"] = mapped_value
             if spalte.get("number_format"):
-                cell.number_format = spalte["number_format"]
+                column["number_format"] = spalte["number_format"]
             else:
                 if isinstance(mapped_value, date):
-                    cell.number_format = 'DD.MM.YYYY'
+                    column["number_format"] = 'DD.MM.YYYY'
                 if isinstance(mapped_value, datetime):
-                    cell.number_format = 'DD.MM.YYYY HH:MM:SS'
-            column += 1
-        row += 1
+                    column["number_format"] = 'DD.MM.YYYY HH:MM:SS'
+            if spalte.get("computed"):
+                column["computed"] = spalte["computed"]
+
+    # sortieren
+    for sort_def in reversed(export_profil["sortierung"]["felder"]):
+        if sort_def["wie"] == "absteigend":
+            reverse = True
+        elif sort_def["wie"] == "aufsteigend":
+            reverse = False
+        else:
+            raise RuntimeError(
+                f"Unbekannte Sortierung zum 'feld'='{sort_def['feld']}' mit 'wie'='{sort_def['wie']}' "
+                f", erlaubt sind nur 'aufsteigend' oder 'absteigend'.")
+        rows.sort(
+            key=lambda r: list(filter(lambda c: c["feld_name"] == sort_def["feld"], r))[0]["value"],
+            reverse=reverse
+        )
+
+    # Computed und Format ermitteln
+    for row in rows:
+        for column in row:
+            # computed Wert ermitteln
+            if column.get("computed"):
+                computed = column.get("computed")
+                # bekannte Methoden ersetzen
+                computed = computed \
+                    .replace("nicht_fortlaufend()",
+                             "pruefe_is_nicht_fortlaufend(row, fortlaufendes_feld, max_fortlaufendes_feld)")
+                column["value"] = eval(computed)
+            # Format ermitteln
+            for format_candidate in export_profil["formate"]:
+                if re.match(format_candidate["match"], str(column["value"])):
+                    if "PatternFill" == format_candidate["format"]["format"]:
+                        column["fill"] = PatternFill(start_color=format_candidate["format"]["start_color"],
+                                                     end_color=format_candidate["format"]["end_color"],
+                                                     fill_type=format_candidate["format"]["fill_type"])
+
+        for column in row:
+            # max. fortlaufendes Feld merken
+            if fortlaufendes_feld and column["feld_name"] == fortlaufendes_feld:
+                max_fortlaufendes_feld = max(max_fortlaufendes_feld, column["value"])
+
+    # als Excel speichern
+    for row in rows:
+        column_idx = 1
+        for column in row:
+            new_cell = ws.cell(column=column_idx, row=row_idx, value=column["value"])
+            if column.get("number_format"):
+                new_cell.number_format = column["number_format"]
+            if column.get("fill"):
+                new_cell.fill = column["fill"]
+            column_idx += 1
+        row_idx += 1
+
+    if fortlaufendes_feld:
+        with open(filename_fortlaufendes_feld, 'w', encoding='utf-8') as outfile:
+            outfile.write(str(1))
 
     wb.save(filename=export_profil["dateiname"])
+
+
+def map_value(value, mapping_type=None):
+    if mapping_type == "string":
+        return str(value)
+    if mapping_type == "int":
+        return int(value)
+
+    return map_str_value(value)
 
 
 def map_str_value(value):
@@ -148,6 +255,11 @@ def map_datum_zeit(value):
     return datetime.strptime(value, "%d.%m.%Y %H:%M:%S")
 
 
+def pruefe_is_nicht_fortlaufend(columns, fortlaufendes_feld, previous_fortlaufendes_feld):
+    return not list(filter(lambda c: c["feld_name"] == fortlaufendes_feld, columns))[0][
+                   "value"] == previous_fortlaufendes_feld + 1
+
+
 def main(argv):
     """
     Export die übergebene JSON Datei (documents_datei) mit den exportierten DMS Dokumenten Feldern nach Excel.
@@ -189,4 +301,5 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    # main(sys.argv[1:])
+    main(["-d", "../export_documents.json", "-e", "../config/dmsarchiv_vorlage.json"])

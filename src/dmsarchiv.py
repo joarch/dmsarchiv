@@ -1,6 +1,7 @@
 import configparser
 import json
 import os
+import shutil
 import sys
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -141,20 +142,33 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
         json.dump(result, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
     os.remove(json_export_datei_tmp)
 
-    # Excel Export
-    if export_parameter["export"]["export_format"] == "xlsx":
-        export_nach_excel(result, export_parameter["export"])
+    print(
+        f"Dokumente geladen im Zeitraum: {export_von_datum} - {export_bis_datum}, "
+        f"Anzahl geladen: {result['anzahl_exportiert']}, "
+        f"Anzahl neu: {result['anzahl_neu']}, "
+        f"Anzahl gesamt: {result['anzahl']}.")
+
+    # wenn alle Dokumente bis zum aktuell Tag exportiert wurden,
+    # wird die Excel Datei geschrieben und die JSON Datei als Temp.-Datei umbenannt
+    if export_von_datum == datetime.now().strftime("%d.%m.%Y"):
+        # Excel Export
+        if export_parameter["export"]["export_format"] == "xlsx":
+            export_nach_excel(result, export_parameter["export"])
+        else:
+            raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export']['export_format']}")
+        # vorhandene JSON Datei als Temp.-Datei sichern
+        splitext = os.path.splitext(json_export_datei)
+        shutil.move(json_export_datei, os.path.join(
+            os.path.dirname(json_export_datei),
+            os.path.basename(splitext[0]) + "_tmp" + splitext[1]
+        ))
     else:
-        raise RuntimeError(f"nicht unterstütztes Export Format {export_parameter['export']['export_format']}")
+        # noch nicht alle Dokumente geladen
+        print("Es wurden noch nicht alle Dokumente bis zum heutigen Tag geladen, der Export wird nicht durchgeführt.")
+        print("Bitte das Programm erneut ausführen.")
 
     # Export Info (letzter Export Zeitstempel und DMS API Info) in die Config-Datei zurückschreiben
     _write_config(export_profil, export_info)
-
-    print(
-        f"Export fertig: {export_von_datum} - {export_bis_datum}, "
-        f"Anzahl exportiert: {result['anzahl_exportiert']}, "
-        f"Anzahl neu: {result['anzahl_neu']}, "
-        f"Anzahl gesamt: {result['anzahl']}.")
 
 
 def _json_load(filename):

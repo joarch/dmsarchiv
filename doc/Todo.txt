@@ -1,5 +1,3 @@
-- Export JSON Datei nach dem Export löschen
-
 - classifyAttribut Namen aus dem DMS auslesen und in der Konfiguration verwenden
 
 - log_datei schreiben

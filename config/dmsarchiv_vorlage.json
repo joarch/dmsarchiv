@@ -6,8 +6,11 @@
   ],
   "export": {
     "export_format": "xlsx",
+    "vorlage_dateiname": "",
+    "vorlage_sheet_name": "",
     "dateiname": "export_documents.xlsx",
-    "datei_postfix": "_%Y-%m-%d",
+    "dateiname_postfix": "_%Y-%m-%d",
+    "id_feld": "docId",
     "fortlaufendes_feld": "nummer_sorierung",
     "spaltenueberschrift": "ja",
     "spaltenueberschrift_format": {
@@ -63,10 +66,6 @@
         "ueberschrift": "Bemerkung"
       },
       {
-        "feld": "",
-        "ueberschrift": "Geprüft"
-      },
-      {
         "feld": "dyn_1_1526633932510",
         "ueberschrift": "Nummer",
         "type": "string"
@@ -89,6 +88,10 @@
         "alias": "warnung",
         "computed": "'Warnung nicht fortlaufend' if nicht_fortlaufend() else ''",
         "ueberschrift": "Warnung"
+      },
+      {
+        "feld": "",
+        "ueberschrift": "Geprüft"
       }
     ]
   }

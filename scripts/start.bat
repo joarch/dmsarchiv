@@ -8,4 +8,3 @@ set PYTHONPATH=%PROGRAM_DIR%\src
 
 venv\Scripts\python %PYTHONPATH%\dmsarchiv.py
 
-pause

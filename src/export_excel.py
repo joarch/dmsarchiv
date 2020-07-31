@@ -8,16 +8,27 @@ from datetime import datetime, date
 from decimal import Decimal
 from getopt import getopt, GetoptError
 
-from openpyxl import Workbook
+from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Font
 from openpyxl.utils import get_column_letter
 
 
 def export_nach_excel(documents, export_profil):
-    # TODO datei_postfix auswerten, wenn gleiche Datei, dann fortlaufend speichern (anhängen oder aktualisieren)
+    # Zieldateiname ermitteln
+    ziel_dateiname = export_profil["dateiname"]
+    postfix = export_profil.get("dateiname_postfix")
+    if postfix:
+        if "%" in postfix:
+            postfix = datetime.now().strftime(postfix)
+        splitext = os.path.splitext(os.path.basename(export_profil["dateiname"]))
+        ziel_dateiname = os.path.join(
+            os.path.dirname(export_profil["dateiname"]),
+            splitext[0] + postfix + splitext[1]
+        )
 
+    # letzte fortlaufende Nummer ermitteln
     fortlaufendes_feld = export_profil.get("fortlaufendes_feld")
-    max_fortlaufendes_feld = -1
+    letzte_fortlaufende_nummer = -1
     filename_fortlaufendes_feld = None
     if fortlaufendes_feld:
         filename_fortlaufendes_feld = os.path.join(
@@ -25,42 +36,11 @@ def export_nach_excel(documents, export_profil):
             os.path.splitext(os.path.basename(export_profil["dateiname"]))[0] + "_" +
             "fortlaufendes_feld.txt"
         )
-        with open(filename_fortlaufendes_feld, 'r', encoding='utf-8') as outfile:
-            value = outfile.read()
-            if value:
-                max_fortlaufendes_feld = int(value)
-
-    wb = Workbook()
-    ws = wb.active
-    # ws.title = ...
-
-    row_idx = 1
-
-    # mit Spaltenüberschrifen
-    if export_profil["spaltenueberschrift"].lower() == "ja":
-        column_header_format = export_profil.get("spaltenueberschrift_format")
-        if column_header_format is not None:
-            if "PatternFill" == column_header_format["format"]:
-                column_header = PatternFill(start_color=column_header_format["start_color"],
-                                            end_color=column_header_format["end_color"],
-                                            fill_type=column_header_format["fill_type"])
-            else:
-                raise RuntimeError(
-                    f"Unbekanntes Format {column_header_format['format']} in 'spaltenueberschrift_format/format'. "
-                    f"Möglich ist nur 'PatternFill'")
-        else:
-            # Standard Format
-            column_header = PatternFill(start_color='AAAAAA',
-                                        end_color='AAAAAA',
-                                        fill_type='solid')
-        column_idx = 1
-        for spalte in export_profil["spalten"]:
-            ws.cell(column=column_idx, row=row_idx, value=spalte["ueberschrift"])
-            col = ws["{}{}".format(get_column_letter(column_idx), row_idx)]
-            col.font = Font(bold=True)
-            col.fill = column_header
-            column_idx += 1
-        row_idx += 1
+        if os.path.exists(filename_fortlaufendes_feld):
+            with open(filename_fortlaufendes_feld, 'r', encoding='utf-8') as outfile:
+                value = outfile.read()
+                if value:
+                    letzte_fortlaufende_nummer = int(value)
 
     # Zeilen und Spalten aus den Dokumenten anhand Export Profil ermitteln
     rows = list()
@@ -145,7 +125,7 @@ def export_nach_excel(documents, export_profil):
                 # bekannte Methoden ersetzen
                 computed = computed \
                     .replace("nicht_fortlaufend()",
-                             "pruefe_is_nicht_fortlaufend(row, fortlaufendes_feld, max_fortlaufendes_feld)")
+                             "pruefe_is_nicht_fortlaufend(row, fortlaufendes_feld, letzte_fortlaufende_nummer)")
                 column["value"] = eval(computed)
             # Format ermitteln
             for format_candidate in export_profil["formate"]:
@@ -158,9 +138,107 @@ def export_nach_excel(documents, export_profil):
         for column in row:
             # max. fortlaufendes Feld merken
             if fortlaufendes_feld and column["feld_name"] == fortlaufendes_feld:
-                max_fortlaufendes_feld = max(max_fortlaufendes_feld, column["value"])
+                letzte_fortlaufende_nummer = column["value"]
+        if not letzte_fortlaufende_nummer:
+            raise RuntimeError("Die fortlaufende Nummer konnte nicht ermittelt werden")
 
     # als Excel speichern
+    if not os.path.exists(ziel_dateiname):
+        # neue Excel Datei
+        if not export_profil.get("vorlage_dateiname"):
+            # neu
+            wb = Workbook()
+            ws = wb.active
+        else:
+            # aus Vorlage
+            wb = load_workbook(filename=export_profil["vorlage_dateiname"])
+            if not export_profil.get("vorlage_sheet_name"):
+                ws = wb.active
+            else:
+                ws = wb[export_profil["vorlage_sheet_name"]]
+
+        row_idx = 1
+        # mit Spaltenüberschrifen
+        if export_profil["spaltenueberschrift"].lower() == "ja":
+            column_header_format = export_profil.get("spaltenueberschrift_format")
+            if column_header_format is not None:
+                if "PatternFill" == column_header_format["format"]:
+                    column_header = PatternFill(start_color=column_header_format["start_color"],
+                                                end_color=column_header_format["end_color"],
+                                                fill_type=column_header_format["fill_type"])
+                else:
+                    raise RuntimeError(
+                        f"Unbekanntes Format {column_header_format['format']} in 'spaltenueberschrift_format/format'. "
+                        f"Möglich ist nur 'PatternFill'")
+            else:
+                # Standard Format
+                column_header = PatternFill(start_color='AAAAAA',
+                                            end_color='AAAAAA',
+                                            fill_type='solid')
+            column_idx = 1
+            for spalte in export_profil["spalten"]:
+                ws.cell(column=column_idx, row=row_idx, value=spalte["ueberschrift"])
+                col = ws["{}{}".format(get_column_letter(column_idx), row_idx)]
+                col.font = Font(bold=True)
+                col.fill = column_header
+                column_idx += 1
+            row_idx += 1
+
+        # Zeilen und Spalten ins Excel Dokument schreiben
+        append_rows(row_idx, rows, ws)
+    else:
+        # vorhandene Excel Datei fortschreiben
+        wb = load_workbook(filename=ziel_dateiname)
+        if not export_profil.get("vorlage_sheet_name"):
+            ws = wb.active
+        else:
+            ws = wb[export_profil["vorlage_sheet_name"]]
+        id_feld = export_profil["id_feld"]
+        id_feld_idx = -1
+        for idx, spalte in enumerate(export_profil["spalten"]):
+            if spalte["feld"] == id_feld:
+                id_feld_idx = idx
+        if id_feld_idx == -1:
+            raise RuntimeError(
+                f"Fehler das id_feld '{id_feld}' existiert nicht als Spalte in der Export Konfiguration.")
+        # update Rows
+        empties = 0
+        last_row = 0
+        for row_idx, row in enumerate(ws.iter_rows()):
+            cell = row[id_feld_idx]
+            if cell.value:
+                empties = 0
+                update_row(cell.value, id_feld_idx, rows, row)
+                rows = remove_row(cell.value, id_feld_idx, rows)
+            else:
+                empties += 1
+                for cell in row:
+                    # evtl. leere Zeile, nur wenn alle Spalten ebenfalls leer sind
+                    if cell.value:
+                        empties = 0
+                        break
+            if empties == 0:
+                last_row = row_idx + 1
+            if empties > 100:
+                # fertig, nur noch leere Id Spalten
+                break
+        # neue Rows anhängen
+        row_idx = last_row + 1
+        append_rows(row_idx, rows, ws)
+
+    wb.save(filename=ziel_dateiname)
+    print(f"Die Excel-Datei wurde geschrieben: '{ziel_dateiname}'")
+
+    # letzte fortlaufende Nummer in Datei merken
+    if fortlaufendes_feld:
+        with open(filename_fortlaufendes_feld, 'w', encoding='utf-8') as outfile:
+            outfile.write(str(letzte_fortlaufende_nummer))
+
+
+def append_rows(row_idx, rows, ws):
+    """
+    Hängt die rows an das Sheet, beginnend ab Zeile row_idx
+    """
     for row in rows:
         column_idx = 1
         for column in row:
@@ -172,11 +250,31 @@ def export_nach_excel(documents, export_profil):
             column_idx += 1
         row_idx += 1
 
-    if fortlaufendes_feld:
-        with open(filename_fortlaufendes_feld, 'w', encoding='utf-8') as outfile:
-            outfile.write(str(1))
 
-    wb.save(filename=export_profil["dateiname"])
+def update_row(id_value, id_feld_idx, rows, row):
+    """
+    Aktualisiert die row im Sheet, wenn sie innerhalb der neuen rows existiert.
+    Existiert die row nicht in den neuen rows, bleibt sie unverändert.
+    """
+    existing = list(filter(lambda r: r[id_feld_idx]["value"] == id_value, rows))
+    if len(existing) == 1:
+        # aktualisieren vorhandene Row
+        for column_idx, column in enumerate(existing[0]):
+            row[column_idx].value = column["value"]
+            if column.get("number_format"):
+                row[column_idx].number_format = column["number_format"]
+            if column.get("fill"):
+                row[column_idx].fill = column["fill"]
+    elif len(existing) > 1:
+        raise RuntimeError(f"Zeile mit Id '{id_value}' ist mehrfach vorhanden. Anzahl: {len(existing)}")
+    # ignorieren, Row nur im Excel Dokument
+
+
+def remove_row(id_value, id_feld_idx, rows):
+    """
+    Löscht die row mit der id_value aus den rows
+    """
+    return [row for row in rows if row[id_feld_idx]["value"] != id_value]
 
 
 def map_value(value, mapping_type=None):

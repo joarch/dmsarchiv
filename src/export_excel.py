@@ -102,19 +102,20 @@ def export_nach_excel(documents, export_profil):
                 column["computed"] = spalte["computed"]
 
     # sortieren
-    for sort_def in reversed(export_profil["sortierung"]["felder"]):
-        if sort_def["wie"] == "absteigend":
-            reverse = True
-        elif sort_def["wie"] == "aufsteigend":
-            reverse = False
-        else:
-            raise RuntimeError(
-                f"Unbekannte Sortierung zum 'feld'='{sort_def['feld']}' mit 'wie'='{sort_def['wie']}' "
-                f", erlaubt sind nur 'aufsteigend' oder 'absteigend'.")
-        rows.sort(
-            key=lambda r: list(filter(lambda c: c["feld_name"] == sort_def["feld"], r))[0]["value"],
-            reverse=reverse
-        )
+    if export_profil.get("sortierung"):
+        for sort_def in reversed(export_profil["sortierung"]["felder"]):
+            if sort_def["wie"] == "absteigend":
+                reverse = True
+            elif sort_def["wie"] == "aufsteigend":
+                reverse = False
+            else:
+                raise RuntimeError(
+                    f"Unbekannte Sortierung zum 'feld'='{sort_def['feld']}' mit 'wie'='{sort_def['wie']}' "
+                    f", erlaubt sind nur 'aufsteigend' oder 'absteigend'.")
+            rows.sort(
+                key=lambda r: list(filter(lambda c: c["feld_name"] == sort_def["feld"], r))[0]["value"],
+                reverse=reverse
+            )
 
     # Computed und Format ermitteln
     for row in rows:

@@ -24,6 +24,7 @@ PARAM_PASSWD = "dms_api_passwort"
 DEFAULT_EXPORT_VON_DATUM = "01.01.2010"
 
 CLASSIFY_ATTRIBUTES_FILENAME = "classify_attributes.json"
+FOLDERS_FILENAME = "folders.json"
 
 
 def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAMETER_SECTION, export_von_datum=None,
@@ -46,6 +47,12 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
         classify_attributes = _get_classify_attributes(api_url, cookies)
         with open(CLASSIFY_ATTRIBUTES_FILENAME, 'w', encoding='utf-8') as outfile:
             json.dump(classify_attributes, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
+
+    # DMS API Order auslesen, wenn noch nicht vorhanden
+    if not os.path.exists(FOLDERS_FILENAME):
+        folders = _get_folders(api_url, cookies)
+        with open(FOLDERS_FILENAME, 'w', encoding='utf-8') as outfile:
+            json.dump(folders, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
 
     # Konfiguration lesen
     parameter_export = _get_config(export_profil)
@@ -232,6 +239,12 @@ def _get_statistics(api_url, cookies):
 
 def _get_classify_attributes(api_url, cookies):
     r = requests.get("{}/classifyAttributes".format(api_url), cookies=cookies, headers=_headers())
+    _assert_request(r)
+    return json.loads(r.text)
+
+
+def _get_folders(api_url, cookies):
+    r = requests.get("{}/folders".format(api_url), cookies=cookies, headers=_headers())
     _assert_request(r)
     return json.loads(r.text)
 

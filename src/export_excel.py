@@ -129,12 +129,13 @@ def export_nach_excel(documents, export_profil):
                              "pruefe_is_nicht_fortlaufend(row, fortlaufendes_feld, letzte_fortlaufende_nummer)")
                 column["value"] = eval(computed)
             # Format ermitteln
-            for format_candidate in export_profil["formate"]:
-                if re.match(format_candidate["match"], str(column["value"])):
-                    if "PatternFill" == format_candidate["format"]["format"]:
-                        column["fill"] = PatternFill(start_color=format_candidate["format"]["start_color"],
-                                                     end_color=format_candidate["format"]["end_color"],
-                                                     fill_type=format_candidate["format"]["fill_type"])
+            if export_profil.get("formate"):
+                for format_candidate in export_profil["formate"]:
+                    if re.match(format_candidate["match"], str(column["value"])):
+                        if "PatternFill" == format_candidate["format"]["format"]:
+                            column["fill"] = PatternFill(start_color=format_candidate["format"]["start_color"],
+                                                         end_color=format_candidate["format"]["end_color"],
+                                                         fill_type=format_candidate["format"]["fill_type"])
 
         for column in row:
             # max. fortlaufendes Feld merken

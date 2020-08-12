@@ -283,7 +283,10 @@ def map_value(value, mapping_type=None):
     if mapping_type == "string":
         return str(value)
     if mapping_type == "int":
-        return int(value)
+        try:
+            return int(value)
+        except ValueError:
+            return -1
 
     return map_str_value(value)
 

@@ -56,26 +56,46 @@ Info-Parameter werden nach jedem erfolgreichen Export Lauf aktualisiert:
 - info_letzter_export_von_datum: Von-Datum des letzten Export Zeitraums
 - info_letzter_export_anzahl_dokumente: Anzahl der zuletzt exportierten Dokumente
 
-# Export Profil Date (dmsarchiv.json)
+# Export Profil Date (z.B. dmsarchiv.json)
 
 Hiermit wird der Export und die Zieldatei konfiguriert.
+
+## Parameter ""
+
+## Parameter "suchparameter_list"
+
 Mit dem Parameter "suchparameter_list" können zusätzliche Filter definiert werden.
 
-Beispiel für zwei zusätzliche Suchparameter:
+Beispiele für zwei zusätzliche Suchparameter:
 suchparameter_list: [
     {
           "classifyAttribut": "dyn_0_....",
           "searchOperator": "=",
           "searchValue": "TEST"
-    },
-    {
+    }, {
           "classifyAttribut": "dyn_0_....",
           "searchOperator": ">=",
           "searchValue": "2020-01-01"
-    },
+    }, {
+      "classifyAttribut": "folder",
+      "searchOperator": "=",
+      "searchValue": "..."
+    }, {
+      "classifyAttribut": "mainfolder",
+      "searchOperator": "=",
+      "searchValue": "..."
+    }
 ]
 
 Als classifyAttribut müsse die internen Namen der Klassifizierungsattribute angegeben werden.
 Die Namen stehen nach dem ersten erfolgreichen Connect zum DMS in der Datei: classify_attributes.json
 
-Unter "export" stehen die Parameter zur Zieldatei.
+## Parameter "export"
+
+Hier stehen die Parameter zur Zieldatei.
+
+Mit "id_feld" wird das Feld in der Zieldatei angegeben, mit dem die Zeile (Dokument) eingeutig identifiziert wird.
+Das Feld wird dann benötigt, wenn die gleiche Zieldatei bei mehren Exports wiederverwendet wird.
+
+Mit "fortlaufendes_feld" kann ein Feld definiert werden, was zur Überprüfung einer fortlaufenden Nummer genutzt wird.
+Wenn dieses Feld nicht fortlaufend ist, d.h. es sind Lücken vorhanden, kann dann beispielsweise eine Warnung

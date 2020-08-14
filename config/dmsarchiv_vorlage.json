@@ -75,6 +75,7 @@
         "alias": "nummer_sorierung",
         "type": "int",
         "mapping": {
+          "type": "re",
           "methode": "sub",
           "argumente": [
             "^18\\.|19\\.|20\\.",
@@ -88,6 +89,36 @@
         "alias": "warnung",
         "computed": "'Warnung nicht fortlaufend' if nicht_fortlaufend() else ''",
         "ueberschrift": "Warnung"
+      },
+      {
+        "feld": "folder",
+        "ueberschrift": "Ordner",
+        "mapping": {
+          "type": "datei",
+          "dateiname": "folders.json",
+          "id": "oId",
+          "name": "foldername"
+        }
+      },
+      {
+        "feld": "mainFolder",
+        "ueberschrift": "Hauptordner",
+        "mapping": {
+          "type": "datei",
+          "dateiname": "folders.json",
+          "id": "oId",
+          "name": "foldername"
+        }
+      },
+      {
+        "feld": "docart",
+        "ueberschrift": "Dokumentenart",
+        "mapping": {
+          "methode": "datei",
+          "dateiname": "types.json",
+          "id": "id",
+          "name": "name"
+        }
       },
       {
         "feld": "",

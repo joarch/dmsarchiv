@@ -12,6 +12,8 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Font
 from openpyxl.utils import get_column_letter
 
+from common import _json_load
+
 
 def export_nach_excel(documents, export_profil):
     # Zieldateiname ermitteln
@@ -41,6 +43,9 @@ def export_nach_excel(documents, export_profil):
                 value = outfile.read()
                 if value:
                     letzte_fortlaufende_nummer = int(value)
+
+    # Datei Mapping Caches
+    datei_mappings = dict()
 
     # Zeilen und Spalten aus den Dokumenten anhand Export Profil ermitteln
     rows = list()
@@ -73,17 +78,29 @@ def export_nach_excel(documents, export_profil):
                 mapping_def = spalte.get("mapping")
                 if mapping_def is not None:
                     # konfiguriertes Mapping anwenden
-                    # - zuerst immer in String umwandeln, das Mapping geht aktuell nur mir RegEx
-                    mapped_value = map_value(value, "string")
-                    re_operation = getattr(re, mapping_def["methode"])
-                    argumente = mapping_def["argumente"]
-                    if len(argumente) == 2:
-                        mapped_value = re_operation(argumente[0], argumente[1], mapped_value)
+                    if mapping_def["typ"] == "re":
+                        # Mapping mit RegEx Methode
+                        # - zuerst immer in String umwandeln, das Mapping geht aktuell nur mir RegEx
+                        mapped_value = map_value(value, "string")
+                        re_operation = getattr(re, mapping_def["methode"])
+                        argumente = mapping_def["argumente"]
+                        if len(argumente) == 2:
+                            mapped_value = re_operation(argumente[0], argumente[1], mapped_value)
+                        else:
+                            raise RuntimeError(
+                                f"Fehler beim Mapping zum Feld '{feld_name}'. "
+                                f"Es werden nur 2 Argument unterstützt.")
+                        mapped_value = map_value(mapped_value, spalte.get("type"))
+                    elif mapping_def["typ"] == "datei":
+                        # Mapping aus Datei auslesen
+                        # - Datei Mapping Cache initialisieren
+                        if datei_mappings.get(mapping_def["dateiname"]) is None:
+                            datei_mappings[mapping_def["dateiname"]] = _init_mapping_data(mapping_def)
+                        # mapping von id zu name
+                        mapping_data = datei_mappings[mapping_def["dateiname"]]
+                        mapped_value = mapping_data[value]
                     else:
-                        raise RuntimeError(
-                            f"Fehler beim Mapping zum Feld '{feld_name}'. "
-                            f"Es werden nur 2 Argument unterstützt.")
-                    mapped_value = map_value(mapped_value, spalte.get("type"))
+                        raise RuntimeError(f"Unbekannter Mapping Typ: {mapping_def['type']}")
                 else:
                     mapped_value = map_value(value, spalte.get("type"))
             else:
@@ -361,6 +378,17 @@ def map_datum_zeit(value):
 def pruefe_is_nicht_fortlaufend(columns, fortlaufendes_feld, previous_fortlaufendes_feld):
     return not list(filter(lambda c: c["feld_name"] == fortlaufendes_feld, columns))[0][
                    "value"] == previous_fortlaufendes_feld + 1
+
+
+def _init_mapping_data(mapping_def):
+    """
+    List alle Einträge und erzeugt ein neues Dict anhand der 'id' und 'name' Definition
+    """
+    result = dict()
+    mapping_data = _json_load(mapping_def["dateiname"])
+    for entry in mapping_data:
+        result[entry[mapping_def["id"]]] = entry[mapping_def["name"]]
+    return result
 
 
 def main(argv):

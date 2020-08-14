@@ -1,4 +1,4 @@
-# DMS Debugging:
+# DMS Server Debugging:
 http://<host>:8180/api/startDebug
 http://<host>:8180/swagger-ui.html#/eco-dms-rest-controller
 

@@ -42,7 +42,7 @@ copy update_1.log %TEMP_DIR%
 del update_1.log
 
 copy %PROGRAM_DIR%\scripts\update.bat . >NUL 2>NUL
-copy %PROGRAM_DIR%\scripts\start.bat . >NUL 2>NUL
+REM copy %PROGRAM_DIR%\scripts\start.bat . >NUL 2>NUL
 
 REM notwendige Programmbibliotheken installieren
 venv\Scripts\pip install requests >NUL 2>NUL
@@ -53,4 +53,3 @@ echo "Update fertig"
 echo "**********************************************************"
 
 :ENDE
-

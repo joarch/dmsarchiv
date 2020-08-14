@@ -6,12 +6,12 @@ import sys
 from datetime import datetime, timedelta
 from decimal import Decimal
 from getopt import getopt, GetoptError
-from json.decoder import JSONDecodeError
 from typing import List, Dict
 
 import requests
 from requests.auth import HTTPBasicAuth
 
+from common import _json_load
 from export_excel import export_nach_excel
 
 DEFAULT_PARAMETER_SECTION = "config.ini:PARAMETER"
@@ -25,6 +25,7 @@ DEFAULT_EXPORT_VON_DATUM = "01.01.2010"
 
 CLASSIFY_ATTRIBUTES_FILENAME = "classify_attributes.json"
 FOLDERS_FILENAME = "folders.json"
+TYPES_FILENAME = "types.json"
 
 
 def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAMETER_SECTION, export_von_datum=None,
@@ -53,6 +54,12 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
         folders = _get_folders(api_url, cookies)
         with open(FOLDERS_FILENAME, 'w', encoding='utf-8') as outfile:
             json.dump(folders, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
+
+    # DMS API Dokumentenart auslesen, wenn noch nicht vorhanden
+    if not os.path.exists(TYPES_FILENAME):
+        types = _get_types(api_url, cookies)
+        with open(TYPES_FILENAME, 'w', encoding='utf-8') as outfile:
+            json.dump(types, outfile, ensure_ascii=False, indent=2, sort_keys=True, default=json_serial)
 
     # Konfiguration lesen
     parameter_export = _get_config(export_profil)
@@ -178,21 +185,6 @@ def export(profil=DEFAULT_PARAMETER_SECTION, export_profil=DEFAULT_EXPORT_PARAME
     _write_config(export_profil, export_info)
 
 
-def _json_load(filename):
-    encodings = ['utf-8-sig', 'utf-8', 'windows-1250', 'windows-1252', 'iso-8859-1', 'cp1252']
-    for encoding in encodings:
-        try:
-            with open(filename, encoding=encoding) as file:
-                export_parameter = json.load(file)
-            return export_parameter
-        except JSONDecodeError:
-            # TODO log warning
-            pass
-    raise RuntimeError(
-        f"Fehler beim Lesen der Datei '{filename}', unbekanntes Encoding Format. "
-        f"Folgende Formate wurden nicht erkannt '{encodings}'.")
-
-
 def _search_documents(api_url, cookies, von_datum, suchparameter_list=None,
                       bis_datum=None, max_documents=1000, debug=False) -> List[Dict]:
     suchparameter_list = suchparameter_list or []
@@ -245,6 +237,12 @@ def _get_classify_attributes(api_url, cookies):
 
 def _get_folders(api_url, cookies):
     r = requests.get("{}/folders".format(api_url), cookies=cookies, headers=_headers())
+    _assert_request(r)
+    return json.loads(r.text)
+
+
+def _get_types(api_url, cookies):
+    r = requests.get("{}/types".format(api_url), cookies=cookies, headers=_headers())
     _assert_request(r)
     return json.loads(r.text)
 

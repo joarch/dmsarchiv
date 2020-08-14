@@ -72,10 +72,10 @@
       },
       {
         "feld": "dyn_1_1526633932510",
-        "alias": "nummer_sorierung",
+        "alias": "nummer_sortierung",
         "type": "int",
         "mapping": {
-          "type": "re",
+          "typ": "re",
           "methode": "sub",
           "argumente": [
             "^18\\.|19\\.|20\\.",

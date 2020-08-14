@@ -94,17 +94,17 @@
         "feld": "folder",
         "ueberschrift": "Ordner",
         "mapping": {
-          "type": "datei",
+          "typ": "datei",
           "dateiname": "folders.json",
           "id": "oId",
           "name": "foldername"
         }
       },
       {
-        "feld": "mainFolder",
+        "feld": "mainfolder",
         "ueberschrift": "Hauptordner",
         "mapping": {
-          "type": "datei",
+          "typ": "datei",
           "dateiname": "folders.json",
           "id": "oId",
           "name": "foldername"
@@ -114,7 +114,7 @@
         "feld": "docart",
         "ueberschrift": "Dokumentenart",
         "mapping": {
-          "methode": "datei",
+          "typ": "datei",
           "dateiname": "types.json",
           "id": "id",
           "name": "name"

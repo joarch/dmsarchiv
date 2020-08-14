@@ -80,7 +80,7 @@ def export_nach_excel(documents, export_profil):
                     # konfiguriertes Mapping anwenden
                     if mapping_def["typ"] == "re":
                         # Mapping mit RegEx Methode
-                        # - zuerst immer in String umwandeln, das Mapping geht aktuell nur mir RegEx
+                        # - zuerst immer in String umwandeln, wegen RegEx Methode auf String
                         mapped_value = map_value(value, "string")
                         re_operation = getattr(re, mapping_def["methode"])
                         argumente = mapping_def["argumente"]
@@ -93,12 +93,14 @@ def export_nach_excel(documents, export_profil):
                         mapped_value = map_value(mapped_value, spalte.get("type"))
                     elif mapping_def["typ"] == "datei":
                         # Mapping aus Datei auslesen
+                        # - zuerst immer in String umwandeln, Id wird immer als String normalisiert
+                        mapped_value = map_value(value, "string")
                         # - Datei Mapping Cache initialisieren
                         if datei_mappings.get(mapping_def["dateiname"]) is None:
                             datei_mappings[mapping_def["dateiname"]] = _init_mapping_data(mapping_def)
                         # mapping von id zu name
                         mapping_data = datei_mappings[mapping_def["dateiname"]]
-                        mapped_value = mapping_data[value]
+                        mapped_value = mapping_data[mapped_value]
                     else:
                         raise RuntimeError(f"Unbekannter Mapping Typ: {mapping_def['type']}")
                 else:
@@ -387,7 +389,7 @@ def _init_mapping_data(mapping_def):
     result = dict()
     mapping_data = _json_load(mapping_def["dateiname"])
     for entry in mapping_data:
-        result[entry[mapping_def["id"]]] = entry[mapping_def["name"]]
+        result[entry[mapping_def["id"]]] = str(entry[mapping_def["name"]])
     return result
 
 

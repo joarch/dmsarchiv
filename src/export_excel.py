@@ -389,7 +389,7 @@ def _init_mapping_data(mapping_def):
     result = dict()
     mapping_data = _json_load(mapping_def["dateiname"])
     for entry in mapping_data:
-        result[entry[mapping_def["id"]]] = str(entry[mapping_def["name"]])
+        result[str(entry[mapping_def["id"]])] = entry[mapping_def["name"]]
     return result
 
 
